@@ -1,1 +1,1 @@
-# masterhand-react
+# masterhand-web
