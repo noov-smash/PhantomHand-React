@@ -30,7 +30,7 @@ export const Projects = () => {
 
   return (
     <>
-      <TheHeader title="Masterhand" buttonUrl="https://google.com" />
+      <TheHeader title="PhantomHand" buttonUrl="https://github.com/noov-smash/PhantomHand" />
       <StyledProjects>
         {projects &&
           projects.map((p) => (

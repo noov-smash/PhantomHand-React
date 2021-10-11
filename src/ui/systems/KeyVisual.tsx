@@ -29,7 +29,7 @@ const KeyVisual = (props: KeyVisualProps) => {
           width={128}
         />
       </Link>
-      <GitHubButton url="https://google.com" />
+      <GitHubButton url="https://github.com/noov-smash/PhantomHand" />
       <a href="https://twitter.com/intent/user?user_id=1295277787293446145" target="_blank" rel="noreferrer">©︎ NOOV</a>
     </Main>
   );

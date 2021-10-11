@@ -6,7 +6,7 @@ import ImagePath from "../../../assets/masterhand.png";
 export const NoConnection: React.FC = (props) => {
   return (
     <Wrapper>
-      <Image src={ImagePath} alt="MasterHand" />
+      <Image src={ImagePath} alt="PhantomHand" />
       <b>
         <span className="material-icon">info</span>Waiting for Connection
       </b>

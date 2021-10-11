@@ -4,10 +4,10 @@ import KeyVisual from "../../ui/systems/KeyVisual";
 export const Home = () => {
   return (
     <>
-      <TheHeader title="Masterhand" buttonUrl="https://google.com" />
+      <TheHeader title="PhantomHand" buttonUrl="https://github.com/noov-smash/PhantomHand" />
       <KeyVisual
-        title="Masterhand"
-        text="Automation tool for Nintendo Switch"
+        title="PhantomHand"
+        text="Control and Automate Nintendo Switch from a Browser."
       />
     </>
   );

@@ -168,7 +168,7 @@ export const useEmulator = () => {
         .split(/[?#]/)[0]
         .replace("localhost", "127.0.0.1")}?data=${command}`;
       const bitlyLink = await bitly.shorten(url);
-      const hashtags = "masterhand";
+      const hashtags = "PhantomHand";
       window.open(
         `https://twitter.com/intent/tweet?&url=${bitlyLink.link}&hashtags=${hashtags}`,
         "_blank"

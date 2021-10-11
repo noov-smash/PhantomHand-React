@@ -6,6 +6,7 @@ import { Provider } from "./hooks/Provider";
 import { Home } from "./screens/Home";
 import { Projects } from "./screens/Projects";
 import { Project } from "./screens/Project";
+import { NotFoundScreen } from "./screens/404";
 // Styles
 import StyInitialize from "./styles/Initialize";
 
@@ -18,6 +19,7 @@ const App = () => {
           <Route exact path="/" component={Home} />
           <Route exact path="/projects" component={Projects} />
           <Route exact path="/projects/:id" component={Project} />
+          <Route component={NotFoundScreen} />
         </Switch>
       </Router>
     </Provider>
