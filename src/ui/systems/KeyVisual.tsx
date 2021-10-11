@@ -23,7 +23,7 @@ const KeyVisual = (props: KeyVisualProps) => {
       <Link to="/projects">
         <Button
           color="primary"
-          text="Demo"
+          text="Start"
           icon="none"
           size="m"
           width={128}
