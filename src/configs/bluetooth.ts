@@ -9,3 +9,9 @@ export const DSD_TECH = {
   TX_CHARACTERISTIC_UUID: 0xffe1,
   RX_CHARACTERISTIC_UUID: 0xffe1,
 };
+
+export const SUPREME_DUCK = {
+  SERVICE_UUID: 0xffe0,
+  TX_CHARACTERISTIC_UUID: 0xffe1,
+  RX_CHARACTERISTIC_UUID: 0xffe0,
+};

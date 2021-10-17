@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 // Styles
-import styled from 'styled-components'
-import Colors from '../styles/Colors'
-import {Button} from '../ui/parts/Button/Button'
+import styled from "styled-components";
+import Colors from "../styles/Colors";
+import { Button } from "../ui/parts/Button/Button";
 
 export const NotFoundScreen = () => {
   return (
@@ -11,18 +11,12 @@ export const NotFoundScreen = () => {
         <h1>404 Not Found</h1>
         <p>ページが見つかりません</p>
         <Link to="/projects">
-          <Button
-            color="primary"
-            text="Top"
-            icon="none"
-            size="m"
-            width={128}
-          />
+          <Button color="primary" text="Top" icon="none" size="m" width={128} />
         </Link>
       </div>
     </Main>
-  )
-}
+  );
+};
 
 const Main = styled.section`
   height: 100vh;
@@ -30,7 +24,7 @@ const Main = styled.section`
   text-align: center;
   display: grid;
   place-items: center;
-  >div {
+  > div {
     h1 {
       font-weight: 600;
       font-size: 36px;
@@ -40,4 +34,4 @@ const Main = styled.section`
       white-space: pre-wrap;
     }
   }
-`
+`;

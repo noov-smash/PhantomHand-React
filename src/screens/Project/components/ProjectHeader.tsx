@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React from "react";
-import uid from "uniqid"
+import uid from "uniqid";
 // Hooks
 import { Context } from "../../../hooks/Provider";
 import { useEmulator } from "../../../hooks/useEmulator";
@@ -8,7 +8,10 @@ import { useUsb } from "../../../hooks/useUsb";
 import { useBluetooth } from "../../../hooks/useBluetooth";
 // ui
 import { Button } from "../../../ui/parts/Button/Button";
-import { IconButton, IconDropdownButton } from "../../../ui/parts/Button/IconButton";
+import {
+  IconButton,
+  IconDropdownButton,
+} from "../../../ui/parts/Button/IconButton";
 // import { Selector } from "../../../ui/parts/Input/Selector";
 // Styles
 import styled from "styled-components";
@@ -51,18 +54,26 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
           size="s"
           icon="usb"
           positionY="bottom"
-          dropdown={ context.usb.isConnected ?[{
-            state: "active",
-            leftText: context.usb.device.productName || "usb",
-            leftIcon: "usb",
-            rightIcon: "close",
-            onClick: disconnectUsbDevice
-          }] : [{
-            state: "default",
-            leftText: "Search Device",
-            leftIcon: "wifi_tethering",
-            onClick: connectToUsbDevice
-          }]}
+          dropdown={
+            context.usb.isConnected
+              ? [
+                  {
+                    state: "active",
+                    leftText: context.usb.device.productName || "usb",
+                    leftIcon: "usb",
+                    rightIcon: "close",
+                    onClick: disconnectUsbDevice,
+                  },
+                ]
+              : [
+                  {
+                    state: "default",
+                    leftText: "Search Device",
+                    leftIcon: "wifi_tethering",
+                    onClick: connectToUsbDevice,
+                  },
+                ]
+          }
         />
 
         {/* Bluetooth */}
@@ -71,22 +82,31 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
           color={context.bluetooth.isConnected ? "outlinePrimary" : "outline"}
           shape="square"
           size="s"
-          icon={context.bluetooth.isConnected ? "bluetooth_connected" : "bluetooth"}
+          icon={
+            context.bluetooth.isConnected ? "bluetooth_connected" : "bluetooth"
+          }
           positionY="bottom"
-          dropdown={ context.bluetooth.isConnected ?[{
-            state: "active",
-            leftText: context.bluetooth.device.name || "bluetooth",
-            leftIcon: "bluetooth_disabled",
-            rightIcon: "close",
-            onClick: disconnectBluetooth
-          }] : [{
-            state: "default",
-            leftText: "Search Device",
-            leftIcon: "wifi_tethering",
-            onClick: connectToBluetoothDevice
-          }]}
+          dropdown={
+            context.bluetooth.isConnected
+              ? [
+                  {
+                    state: "active",
+                    leftText: context.bluetooth.device.name || "bluetooth",
+                    leftIcon: "bluetooth_disabled",
+                    rightIcon: "close",
+                    onClick: disconnectBluetooth,
+                  },
+                ]
+              : [
+                  {
+                    state: "default",
+                    leftText: "Search Device",
+                    leftIcon: "wifi_tethering",
+                    onClick: connectToBluetoothDevice,
+                  },
+                ]
+          }
         />
-
       </InnerLeft>
 
       {/*----- Right -----*/}

@@ -106,3 +106,5 @@ dist
 build/
 yarn.lock
 .DS_Store
+.firebase
+.vscode

@@ -48,7 +48,9 @@ export const useUsb = () => {
         throw error;
       }
     },
-    [/* read */]
+    [
+      /* read */
+    ]
   );
 
   const onDisconnectUsbDevice = React.useCallback((): void => {

@@ -135,7 +135,7 @@ export const useEmulator = () => {
         window.alert("Updated");
       } else {
         const path = `${context.project.id}/${context.project.data.length}`;
-         await saveCommand(path, {
+        await saveCommand(path, {
           id: uid(),
           index: {
             title: "Untitled",

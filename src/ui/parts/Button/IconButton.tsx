@@ -124,7 +124,7 @@ export interface IconDropdownButtonProps {
   size: "xxs" | "xs" | "s" | "m" | "l" | string;
   icon: string;
   dropdown: DropdownListProps;
-  positionY? : "top" | "bottom"
+  positionY?: "top" | "bottom";
 }
 
 export const IconDropdownButton = (props: IconDropdownButtonProps) => {
@@ -139,34 +139,36 @@ export const IconDropdownButton = (props: IconDropdownButtonProps) => {
   });
   const dropDownRef = React.useRef<HTMLDivElement | null>(null);
 
-  
-  const handleClick = React.useCallback((e: any) => {
-    if (
-      dropDownRef &&
-      dropDownRef.current &&
-      dropDownRef.current.contains(e.target)
-    ) {
-      // Inside
-      const { left, top, bottom } = e.target.getBoundingClientRect();
-      setRect({
-        x: left,
-        y: props.positionY === "bottom" ? bottom : top,
-      });
-      setIsActive((state) => {
-        if (!state === true) document.addEventListener("click", handleClick);
-        return true;
-      });
-    } else {
-      // Outside
-      setIsActive(false);
-      document.removeEventListener("click", handleClick);
-    }
-  }, [props.positionY]);
+  const handleClick = React.useCallback(
+    (e: any) => {
+      if (
+        dropDownRef &&
+        dropDownRef.current &&
+        dropDownRef.current.contains(e.target)
+      ) {
+        // Inside
+        const { left, top, bottom } = e.target.getBoundingClientRect();
+        setRect({
+          x: left,
+          y: props.positionY === "bottom" ? bottom : top,
+        });
+        setIsActive((state) => {
+          if (!state === true) document.addEventListener("click", handleClick);
+          return true;
+        });
+      } else {
+        // Outside
+        setIsActive(false);
+        document.removeEventListener("click", handleClick);
+      }
+    },
+    [props.positionY]
+  );
 
-  const onClickOutside = React.useCallback( () => {
+  const onClickOutside = React.useCallback(() => {
     setIsActive(false);
     document.removeEventListener("click", handleClick);
-  }, [handleClick])
+  }, [handleClick]);
 
   return (
     <StyledWrapper ref={dropDownRef} isActive={isActive}>

@@ -21,16 +21,16 @@ const KeyVisual = (props: KeyVisualProps) => {
       <h1>{props.title}</h1>
       <p>{props.text}</p>
       <Link to="/projects">
-        <Button
-          color="primary"
-          text="Start"
-          icon="none"
-          size="m"
-          width={128}
-        />
+        <Button color="primary" text="Start" icon="none" size="m" width={128} />
       </Link>
       <GitHubButton url="https://github.com/noov-smash/PhantomHand" />
-      <a href="https://twitter.com/intent/user?user_id=1295277787293446145" target="_blank" rel="noreferrer">©︎ NOOV</a>
+      <a
+        href="https://twitter.com/intent/user?user_id=1295277787293446145"
+        target="_blank"
+        rel="noreferrer"
+      >
+        ©︎ NOOV
+      </a>
     </Main>
   );
 };

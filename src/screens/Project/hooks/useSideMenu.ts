@@ -179,7 +179,7 @@ export const useSideMenu = (props: SideMenuProps) => {
   const save = React.useCallback(
     async (data: MenuGroupProps[]): Promise<void> => {
       setMenu(convert().toFormat(data));
-      if(!context.user.isAdmin) return
+      if (!context.user.isAdmin) return;
       const saveData = convert().toRaw(data);
       await saveCommand(props.index.id, saveData);
     },
@@ -188,7 +188,10 @@ export const useSideMenu = (props: SideMenuProps) => {
   );
 
   const saveName = React.useCallback(
-    (action: buttonActionProps, e: React.ChangeEvent<HTMLInputElement>): void => {
+    (
+      action: buttonActionProps,
+      e: React.ChangeEvent<HTMLInputElement>
+    ): void => {
       console.log("Saving Name....");
       if (!menuRef.current) return;
       const newMenu = [...menuRef.current];

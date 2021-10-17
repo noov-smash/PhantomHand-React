@@ -3,26 +3,35 @@ import React from "react";
 // Hooks
 import { Context } from "./Provider";
 // Interfaces
-import { DSD_TECH } from "../configs/bluetooth";
+import { DSD_TECH, SUPREME_DUCK } from "../configs/bluetooth";
 
 export const useBluetooth = () => {
   const [context, setContext] = React.useContext(Context);
   const [queue, setQueue] = React.useState<Uint8Array[]>([]);
 
-  const onDisconnected = React.useCallback((hideAlert?: boolean): void => {
-    if(hideAlert) alert("Lost Connection of BLE Device");
-    context.bluetooth.device?.removeEventListener("gattserverdisconnected", null)
-    setContext((c) => ({
-      ...c,
-      bluetooth: {
-        isConnected: false,
-      },
-    }));
-  }, [context.bluetooth.device, setContext]);
+  const onDisconnected = React.useCallback(
+    (hideAlert?: boolean): void => {
+      if (hideAlert) alert("Lost Connection of BLE Device");
+      context.bluetooth.device?.removeEventListener(
+        "gattserverdisconnected",
+        null
+      );
+      setContext((c) => ({
+        ...c,
+        bluetooth: {
+          isConnected: false,
+        },
+      }));
+    },
+    [context.bluetooth.device, setContext]
+  );
 
   const disconnectBluetooth = React.useCallback(async (): Promise<void> => {
     if (!context.bluetooth.isConnected) return;
-    context.bluetooth.device.removeEventListener("gattserverdisconnected", null)
+    context.bluetooth.device.removeEventListener(
+      "gattserverdisconnected",
+      null
+    );
     context.bluetooth.device.gatt?.disconnect();
     onDisconnected(true);
   }, [context.bluetooth.device, context.bluetooth.isConnected, onDisconnected]);
@@ -34,18 +43,33 @@ export const useBluetooth = () => {
         if (!navigator.bluetooth) return;
         const device = await navigator.bluetooth.requestDevice({
           acceptAllDevices: false,
-          filters: [{ services: [DSD_TECH.SERVICE_UUID] }],
+          filters: [
+            { services: [DSD_TECH.SERVICE_UUID] },
+            { services: [SUPREME_DUCK.SERVICE_UUID] },
+          ],
         });
+
         if (!device.gatt) return;
         const server = await device.gatt.connect();
+
         const deviceName = server.device.name;
-        if (deviceName !== "Adafruit Bluefruit LE" && deviceName !== "DSD TECH")
-          return;
-        const service = await server.getPrimaryService(DSD_TECH.SERVICE_UUID);
-        const characteristic = await service.getCharacteristic(
-          DSD_TECH.TX_CHARACTERISTIC_UUID
+        const deviceConfig =
+          deviceName === "supremeDuck"
+            ? SUPREME_DUCK
+            : deviceName === "DSD TECH"
+            ? DSD_TECH
+            : undefined;
+        if (!deviceConfig) return;
+
+        const service = await server.getPrimaryService(
+          deviceConfig.SERVICE_UUID
         );
-        device.addEventListener("gattserverdisconnected", () => onDisconnected());
+        const characteristic = await service.getCharacteristic(
+          deviceConfig.TX_CHARACTERISTIC_UUID
+        );
+        device.addEventListener("gattserverdisconnected", () =>
+          onDisconnected()
+        );
         setContext((c) => ({
           ...c,
           bluetooth: {
