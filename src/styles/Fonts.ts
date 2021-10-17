@@ -1,8 +1,9 @@
 // Fonts
 import "typeface-poppins";
+import "@fontsource/material-icons";
 
 export const FontFamily =
-  " 'Poppins', 'poppins, M PLUS 1p', 'Noto Sans CJK JP',  游ゴシック体, 'Yu Gothic', YuGothic, 'ヒラギノ角ゴシック Pro', 'Hiragino Kaku Gothic Pro', メイリオ, Meiryo, Osaka, 'ＭＳ Ｐゴシック', 'MS PGothic', sans-serif";
+  " 'Poppins', 'poppins', 'Noto Sans CJK JP', 'Noto Sans JP',  游ゴシック体, 'Yu Gothic', YuGothic, 'ヒラギノ角ゴシック Pro', 'Hiragino Kaku Gothic Pro', メイリオ, Meiryo, Osaka, 'ＭＳ Ｐゴシック', 'MS PGothic', sans-serif";
 
 interface FontWeightType {
   [key: string]: number;
