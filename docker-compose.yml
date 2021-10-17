@@ -1,0 +1,17 @@
+version: "3.3"
+services:
+  firebase:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    volumes:
+      - "$PWD:/app"
+    working_dir: /app
+    container_name: firebase
+    tty: true
+    ports:
+      - "4000:4000"
+      - "5001:5001"
+      - "8080:8080"
+      - "9005:9005"
+      - "9099:9099"
