@@ -12,6 +12,7 @@ import { ProjectHeader } from "./components/ProjectHeader";
 import { GamePad } from "./components/GamePad";
 // Styles
 import styled from "styled-components";
+import Colors from "../../styles/Colors";
 
 type PageProps = {} & RouteComponentProps<{ id: string }>;
 
@@ -79,6 +80,7 @@ export const Project: React.FC<PageProps> = (props) => {
               <StyledSection>
                 <GamePad />
               </StyledSection>
+              <StyledID>{context.user.isSignedIn && context.user.uid}</StyledID>
             </StyledMain>
           </StyledDiv>
         );
@@ -95,6 +97,7 @@ export const Project: React.FC<PageProps> = (props) => {
     context.project.name,
     context.user.isAdmin,
     context.user.isSignedIn,
+    context.user.uid
   ]);
 };
 
@@ -113,3 +116,11 @@ const StyledMain = styled.main`
 const StyledSection = styled.section`
   height: calc(100vh - 48px);
 `;
+
+const StyledID = styled.span`
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  color: ${Colors.elementColorMute};
+  font-size: 12px;
+`

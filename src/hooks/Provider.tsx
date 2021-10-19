@@ -9,6 +9,7 @@ export const ContextInitial: ContextProps = {
   debug: false,
   user: {
     isSignedIn: false,
+    uid: undefined,
   },
   project: {
     isLoaded: false,

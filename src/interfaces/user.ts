@@ -1,6 +1,7 @@
 export interface UnsignedUserProps {
   isSignedIn: false;
   isAdmin?: boolean;
+  uid: undefined
 }
 
 export interface SignedUserProps {
