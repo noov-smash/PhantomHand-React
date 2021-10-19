@@ -64,11 +64,11 @@ export default NavItem;
 
 const Wrapper = styled.li<NavItemProps>`
   ${Layout.alignElements("flex", "space-between", "center")};
-  padding: ${Layout.spacingVH(0.5, 1)};
+  padding: ${Layout.spacingVH(1/4, 1/2)};
   ${(props) =>
     props._level &&
     css`
-      padding-left: ${Layout.SpacingX(3.5 * props._level)};
+      padding-left: ${Layout.SpacingX(3 * props._level)};
     `};
   ${(props) =>
     props._state === "active" &&

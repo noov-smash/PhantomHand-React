@@ -47,7 +47,7 @@ export const NavFolder = (props: NavFolderProps) => {
         >
           <Wrapper {...props}>
             <InnerLeft onClick={handleIsOpen}>
-              <span className="material-icon">
+              <span className="material-icon fs-s">
                 {_isOpen ? "keyboard_arrow_down" : "keyboard_arrow_right"}
               </span>
               {props._isEditing ? (
@@ -117,11 +117,11 @@ export const NavFolder = (props: NavFolderProps) => {
 const Wrapper = styled.li<{ _level: number }>`
   ${Layout.alignElements("inline-flex", "space-between", "center")};
   width: 100%;
-  padding: ${Layout.spacingVH(1 / 4, 1)};
+  padding: ${Layout.spacingVH(1/4, 1/2)};
   ${(props) =>
     props._level &&
     css`
-      padding-left: ${Layout.SpacingX(3.5 * props._level)};
+      padding-left: ${Layout.SpacingX(3 * props._level)};
     `};
   position: relative;
   &:hover {

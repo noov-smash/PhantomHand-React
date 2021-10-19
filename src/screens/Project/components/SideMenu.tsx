@@ -108,8 +108,6 @@ const Wrapper = styled.nav`
   flex-direction: column;
   width: 256px;
   height: 100%;
-  padding: spacingVH(1, 0);
-  background: $bgColorLv1;
   transition: 0.5s ease;
   overflow: hidden;
   background-color: ${Colors.bgColorLv1};
@@ -120,7 +118,6 @@ const Wrapper = styled.nav`
   .scroll {
     height: calc(100vh - 48px - 48px);
     overflow-y: scroll;
-    ${Layout.spacingBetweenElements("vertical", 2)};
   }
   .footer {
     position: absolute;
@@ -132,7 +129,7 @@ const Wrapper = styled.nav`
 `;
 
 const StyledDroppableArea = styled.div<{ isDraggingOver: boolean }>`
-  ${Layout.spacingBetweenElements("vertical", 2)};
+${Layout.spacingBetweenElements("vertical", 0)};
   user-select: "none";
   background: ${(props) =>
     props.isDraggingOver ? Colors.bgColorLv2 : "transparent"};
