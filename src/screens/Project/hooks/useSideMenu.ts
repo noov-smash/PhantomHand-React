@@ -40,7 +40,7 @@ export const useSideMenu = (props: SideMenuProps) => {
   const [menu, setMenu] = React.useState<MenuGroupProps[]>();
   const [activeItem, setActiveItem] = React.useState<string>();
   const [context, setContext] = React.useContext(Context);
-  const { saveCommand } = useDatabase();
+  const { saveCommand, storeCommand } = useDatabase();
   const menuRef = React.useRef(menu);
 
   React.useEffect(() => {
@@ -179,8 +179,12 @@ export const useSideMenu = (props: SideMenuProps) => {
   const save = React.useCallback(
     async (data: MenuGroupProps[]): Promise<void> => {
       setMenu(convert().toFormat(data));
-      if (!context.user.isAdmin) return;
       const saveData = convert().toRaw(data);
+      if (!context.user.isAdmin) {
+        if (!context.project.id) return
+        storeCommand(context.project.id, saveData);
+        return 
+      }
       await saveCommand(props.index.id, saveData);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

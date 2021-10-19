@@ -18,7 +18,7 @@ type PageProps = {} & RouteComponentProps<{ id: string }>;
 
 export const Project: React.FC<PageProps> = (props) => {
   const [context, setContext] = React.useContext(Context);
-  const { fetchProject, watchCommands } = useDatabase();
+  const { fetchProject } = useDatabase();
   const search = useLocation().search;
 
   const init = React.useCallback(async () => {
@@ -35,7 +35,6 @@ export const Project: React.FC<PageProps> = (props) => {
             isLoaded: true,
           },
         }));
-      project && (await watchCommands(project.id));
       const data = queryString.parse(search).data;
       if (data && typeof data === "string") {
         const decoded: SignalProps[] = rison.decode(data);
@@ -55,7 +54,7 @@ export const Project: React.FC<PageProps> = (props) => {
     } catch (error) {
       console.error(error);
     }
-  }, [fetchProject, props.match.params.id, search, setContext, watchCommands]);
+  }, [fetchProject, props.match.params.id, search, setContext]);
 
   React.useEffect(() => {
     init();
@@ -73,32 +72,25 @@ export const Project: React.FC<PageProps> = (props) => {
                 imageUrl: context.project.imageUrl,
               }}
               data={context.project.data}
-              isEditable={context.user.isSignedIn && context.user.isAdmin}
+              isEditable={context.user.isSignedIn}
             />
             <StyledMain>
               <ProjectHeader />
               <StyledSection>
                 <GamePad />
               </StyledSection>
-              <StyledID>{context.user.isSignedIn && context.user.uid}</StyledID>
+              <StyledID>
+                {context.user.isSignedIn && context.user.uid}
+                <span>({context.user.isAdmin ? "Admin" : "Anonymous"})</span>
+              </StyledID>
             </StyledMain>
           </StyledDiv>
         );
       } else return <></>;
     } else if (!context.app.isLoading && context.project.isLoaded) {
       return <Redirect to="/projects" />;
-    } else return <></>;
-  }, [
-    context.app.isLoading,
-    context.project.data,
-    context.project.id,
-    context.project.imageUrl,
-    context.project.isLoaded,
-    context.project.name,
-    context.user.isAdmin,
-    context.user.isSignedIn,
-    context.user.uid
-  ]);
+    } else return <></>
+  }, [context.app.isLoading, context.project.data, context.project.id, context.project.imageUrl, context.project.isLoaded, context.project.name, context.user.isAdmin, context.user.isSignedIn, context.user.uid]);
 };
 
 const StyledDiv = styled.div`

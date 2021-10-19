@@ -16,7 +16,7 @@ export const useDatabase = () => {
   const [, setContext] = React.useContext(Context);
 
   const fetchCommands = React.useCallback(
-    async (projectId: string): Promise<MenuGroupProps | null> => {
+    async (projectId: string): Promise<MenuGroupProps[] | null> => {
       console.log("Fetching Commands...");
       try {
         const ref = database.ref(`${projectId}/`).orderByKey();
@@ -64,6 +64,11 @@ export const useDatabase = () => {
     },
     []
   );
+
+  const storeCommand = React.useCallback( (projectId: string, data: any): void => {
+    console.log("Store Commands...");
+    localStorage.setItem(`PhantomHand-${projectId}`, JSON.stringify(data))
+  }, [])
 
   const pushCommand = React.useCallback(
     async (path: string, data: any): Promise<void> => {
@@ -122,25 +127,42 @@ export const useDatabase = () => {
   }, []);
 
   const fetchProject = React.useCallback(
-    async (id: string): Promise<FirebaseProjectProps | null> => {
+    async (id: string, isAdmin?: boolean): Promise<FirebaseProjectProps | null> => {
       console.log("Fetching Project...");
       try {
         const ref = await firestore.collection("Projects").doc(id).get();
         const data: firebase.firestore.DocumentData | undefined = ref.data();
-        const commands = await fetchCommands(id);
+
+        const storage = localStorage.getItem(`PhantomHand-${id}`)
+
+        // const margeCommands = async() => {
+        //   const db = await fetchCommands(id)
+        //   const storage = localStorage.getItem(`PhantomHand-${id}`)
+        //   if(!db) return storage || []
+        //   const dbKeys = db.map(d => d.id)
+        //   if(!storage) return db
+        //   const local = JSON.parse(storage).filter( (s: MenuGroupProps) => dbKeys.indexOf(s.id) !== -1)
+        // }
+
+        const commands = isAdmin
+          ? await watchCommands(id)
+          : storage
+            ? JSON.parse(storage)
+            : await fetchCommands(id)
+
         return data
           ? {
               id: data.id,
               name: data.name,
               imageUrl: data.imageUrl,
-              commands: commands || [],
+              data: commands || [],
             }
           : null;
       } catch (error) {
         throw error;
       }
     },
-    [fetchCommands]
+    [fetchCommands, watchCommands]
   );
 
   const userConverter =
@@ -215,6 +237,7 @@ export const useDatabase = () => {
     watchCommands,
     fetchCommands,
     saveCommand,
+    storeCommand,
     pushCommand,
     fetchCommand,
     removeCommand,

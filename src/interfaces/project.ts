@@ -29,5 +29,5 @@ export interface FirebaseProjectProps {
   id: string;
   name: string;
   imageUrl?: string;
-  commands?: any;
+  data?: any;
 }
