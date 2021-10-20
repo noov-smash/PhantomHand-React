@@ -5,7 +5,6 @@ import { useDatabase } from "./useDatabase";
 import { useGamePad } from "./useGamePad";
 // Interfaces
 import { ContextProps, SignalProps } from "../interfaces";
-import { NeutralGamepadProps } from "./Provider";
 import uid from "uniqid";
 import rison from "rison";
 import { BitlyClient } from "bitly";
@@ -16,7 +15,7 @@ export const useEmulator = () => {
   const [buffer, setBuffer] = React.useState<SignalProps[]>()
   const intervalRef = React.useRef<NodeJS.Timeout | null>();
   const { saveCommand, storeCommand } = useDatabase();
-  const { onPush, onTilt } = useGamePad();
+  const { onPush, onTilt, neutral } = useGamePad();
 
   const bufferRef = React.useRef(buffer)
   React.useEffect( () => {
@@ -25,6 +24,7 @@ export const useEmulator = () => {
 
   const stopRec = React.useCallback((): void => {
     console.log("Stop...");
+    neutral()
     setContext((c: ContextProps) => ({
       ...c,
       emulator: {
@@ -40,32 +40,25 @@ export const useEmulator = () => {
           ]),
         },
       },
-      gamePad: {
-        ...c.gamePad,
-        ...NeutralGamepadProps
-      }
     }));
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-  }, [setContext]);
+  }, [neutral, setContext]);
 
   const stopPlay = React.useCallback((): void => {
     console.log("Stop...");
+    neutral()
     setContext((c: ContextProps) => ({
       ...c,
       emulator: { ...c.emulator, state: "standby", time: 0 },
-      gamePad: {
-        ...c.gamePad,
-        ...NeutralGamepadProps
-      }
     }));
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-  }, [setContext]);
+  }, [neutral, setContext]);
 
   const stopAll = React.useCallback( (): void => {
     if(context.emulator.state === "playing" || context.emulator.state === "repeating") stopPlay()

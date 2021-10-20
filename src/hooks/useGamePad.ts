@@ -194,7 +194,7 @@ export const useGamePad = () => {
           stickNumber === 19 || stickNumber === 21
             ? convert(value * -1)
             : convert(value);
-        const magnification = 48
+        const magnification = 32
         const roundedValue =
           Math.floor(convertedValue / magnification) * magnification - 1 > 0
             ? Math.round(convertedValue / magnification) * magnification - 1
@@ -207,6 +207,16 @@ export const useGamePad = () => {
     [convert, onTilt]
   );
 
+  const neutral = React.useCallback( () => {
+    axisChangeHandler("LeftStickX", 0);
+    axisChangeHandler("LeftStickY", 0);
+    axisChangeHandler("RightStickX", 0);
+    axisChangeHandler("RightStickY", 0);
+    for(let i=0; i < 18; i++ ) {
+      onRelease(i)
+    }
+  }, [axisChangeHandler, onRelease])
+
   return {
     connectHandler,
     disconnectHandler,
@@ -215,5 +225,6 @@ export const useGamePad = () => {
     onPush,
     onTilt,
     onRelease,
+    neutral,
   };
 };
