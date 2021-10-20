@@ -47,7 +47,7 @@ export const NavFolder = (props: NavFolderProps) => {
         >
           <Wrapper {...props}>
             <InnerLeft onClick={handleIsOpen}>
-              <span className="material-icon fs-s">
+              <span className="material-icon fs-xs">
                 {_isOpen ? "keyboard_arrow_down" : "keyboard_arrow_right"}
               </span>
               {props._isEditing ? (
@@ -59,14 +59,14 @@ export const NavFolder = (props: NavFolderProps) => {
                   onClickOutside={props._onClickOutside}
                 />
               ) : (
-                <span className={`fs-m title`}>{props.title}</span>
+                <span className={`fs-s title`}>{props.title}</span>
               )}
             </InnerLeft>
             <InnerRight>
               {props._rightButtons &&
                 props._rightButtons.map((e) => (
-                  <div className="right-icon" key={e.id}>
-                    <IconDropdownButton {...e} key={e.id} />
+                  <div className="right-icon fs-s" key={e.id}>
+                    <IconDropdownButton {...e} key={e.id} size="xxs"/>
                   </div>
                 ))}
             </InnerRight>
@@ -140,7 +140,7 @@ const InnerLeft = styled.div`
   ${Layout.alignElements("inline-flex", "flex-start", "center")};
   ${Layout.spacingBetweenElements("horizontal", 0.5)};
   width: 100%;
-  font-size: 14px;
+  font-size: 12px;
 `;
 
 const InnerRight = styled.div`
@@ -149,8 +149,8 @@ const InnerRight = styled.div`
   .right-icon {
     display: grid;
     place-items: center;
-    width: 24px;
-    height: 24px;
+    width: 18px;
+    height: 18px;
     font-size: ${IconSize.s};
     border-radius: ${Layout.SpacingX(0.5)};
     text-align: center;

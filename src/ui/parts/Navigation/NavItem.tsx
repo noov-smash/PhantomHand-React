@@ -106,6 +106,7 @@ const InnerLeft = styled.div`
   width: 100%;
   user-select: none;
   padding-left: ${Layout.SpacingX(0.5)};
+  font-size: 12px;
 `;
 
 const InnerRight = styled.div`
@@ -116,8 +117,8 @@ const InnerRight = styled.div`
     ${Layout.alignElements("flex", "center", "center")};
     display: grid;
     place-items: center;
-    width: 24px;
-    height: 24px;
+    width: 18px;
+    height: 18px;
     font-size: ${IconSize.s};
     border-radius: ${Layout.SpacingX(0.5)};
     text-align: center;

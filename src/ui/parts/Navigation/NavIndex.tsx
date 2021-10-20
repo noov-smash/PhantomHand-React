@@ -45,7 +45,7 @@ export const NavIndex = (props: NavIndexProps) => {
       <InnerRight className="right-icon">
         {props._rightButtons &&
           props._rightButtons.map((e, i) => (
-            <IconDropdownButton {...e} key={e.id} />
+            <IconDropdownButton {...e} key={e.id} size="xxs"/>
           ))}
       </InnerRight>
     </Wrapper>
@@ -91,6 +91,10 @@ const InnerRight = styled.div`
     &:hover {
       background-color: ${Colors.bgColorLv2};
     }
+  }
+  .right-icon {
+    width: 18px;
+    height: 18px;
   }
 `;
 

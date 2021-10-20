@@ -101,11 +101,12 @@ const StyledList = styled.li<{ state: DropdownProps["state"] }>`
     &__icon {
       margin-right: ${Layout.SpacingX(1)};
       /* color: ${Colors.Colors.elementColorWeak}; */
+      font-size: 16px;
     }
     &__text {
       white-space: nowrap;
       /* color: ${Colors.Colors.elementColorWeak}; */
-      font-size: 14px;
+      font-size: 12px;
     }
   }
   .right {
