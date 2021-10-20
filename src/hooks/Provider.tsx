@@ -2,6 +2,33 @@ import React from "react";
 import { ContextProps } from "../interfaces/context";
 import { useAuth } from "./useAuth";
 
+export const NeutralGamepadProps = {
+  buttonStates: {
+    0: false,
+    1: false,
+    2: false,
+    3: false,
+    4: false,
+    5: false,
+    6: false,
+    7: false,
+    8: false,
+    9: false,
+    12: false,
+    13: false,
+    14: false,
+    15: false,
+    16: false,
+    17: false,
+  },
+  stickStates: {
+    18: 128,
+    19: 128,
+    20: 128,
+    21: 128,
+  },
+}
+
 export const ContextInitial: ContextProps = {
   app: {
     isLoading: false,
@@ -33,30 +60,7 @@ export const ContextInitial: ContextProps = {
   },
   gamePad: {
     isConnected: false,
-    buttonStates: {
-      0: false,
-      1: false,
-      2: false,
-      3: false,
-      4: false,
-      5: false,
-      6: false,
-      7: false,
-      8: false,
-      9: false,
-      12: false,
-      13: false,
-      14: false,
-      15: false,
-      16: false,
-      17: false,
-    },
-    stickStates: {
-      18: 128,
-      19: 128,
-      20: 128,
-      21: 128,
-    },
+    ...NeutralGamepadProps,
   },
 };
 

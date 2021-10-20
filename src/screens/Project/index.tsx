@@ -12,7 +12,6 @@ import { ProjectHeader } from "./components/ProjectHeader";
 import { GamePad } from "./components/GamePad";
 // Styles
 import styled from "styled-components";
-import Colors from "../../styles/Colors";
 
 type PageProps = {} & RouteComponentProps<{ id: string }>;
 
@@ -25,7 +24,7 @@ export const Project: React.FC<PageProps> = (props) => {
     try {
       setContext((c) => ({ ...c, app: { isLoading: true } }));
       const projectId = props.match.params.id;
-      const project = await fetchProject(projectId);
+      const project = await fetchProject(projectId, context.user.isAdmin);
       project &&
         setContext((c) => ({
           ...c,
@@ -54,11 +53,12 @@ export const Project: React.FC<PageProps> = (props) => {
     } catch (error) {
       console.error(error);
     }
-  }, [fetchProject, props.match.params.id, search, setContext]);
+  }, [context.user.isAdmin, fetchProject, props.match.params.id, search, setContext]);
 
   React.useEffect(() => {
     init();
-  }, [init]);
+  }, [context.user.isAdmin, init]);
+
 
   return React.useMemo(() => {
     if (!context.app.isLoading) {
@@ -72,17 +72,13 @@ export const Project: React.FC<PageProps> = (props) => {
                 imageUrl: context.project.imageUrl,
               }}
               data={context.project.data}
-              isEditable={context.user.isSignedIn}
+              isEditable={true}
             />
             <StyledMain>
               <ProjectHeader />
               <StyledSection>
                 <GamePad />
               </StyledSection>
-              <StyledID>
-                {context.user.isSignedIn && context.user.uid}
-                <span>({context.user.isAdmin ? "Admin" : "Anonymous"})</span>
-              </StyledID>
             </StyledMain>
           </StyledDiv>
         );
@@ -90,7 +86,7 @@ export const Project: React.FC<PageProps> = (props) => {
     } else if (!context.app.isLoading && context.project.isLoaded) {
       return <Redirect to="/projects" />;
     } else return <></>
-  }, [context.app.isLoading, context.project.data, context.project.id, context.project.imageUrl, context.project.isLoaded, context.project.name, context.user.isAdmin, context.user.isSignedIn, context.user.uid]);
+  }, [context.app.isLoading, context.project.data, context.project.id, context.project.imageUrl, context.project.isLoaded, context.project.name]);
 };
 
 const StyledDiv = styled.div`
@@ -108,11 +104,3 @@ const StyledMain = styled.main`
 const StyledSection = styled.section`
   height: calc(100vh - 48px);
 `;
-
-const StyledID = styled.span`
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  color: ${Colors.elementColorMute};
-  font-size: 12px;
-`

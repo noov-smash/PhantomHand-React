@@ -2,13 +2,14 @@
 import React from "react";
 import { Context } from "../../../hooks/Provider";
 import styled from "styled-components";
+import { Axis } from "react-gamepad";
 
 export interface NintendoSwitchProConProps {
   activeColor?: string;
   inactiveColor?: string;
   onPush: (b: number, s: boolean) => void;
   onRelease: (b: number) => void;
-  onTilt: (s: number, v: number) => void;
+  onTilt: (s: Axis, v: number) => void;
 }
 
 export const NintendoSwitchProCon = ({
@@ -16,7 +17,7 @@ export const NintendoSwitchProCon = ({
   inactiveColor = "#7C8388",
   ...props
 }: NintendoSwitchProConProps) => {
-  const [context, setContext] = React.useContext(Context);
+  const [context] = React.useContext(Context);
   const [coordinates, setCoordinates] = React.useState<{
     x: number;
     y: number;
@@ -51,83 +52,56 @@ export const NintendoSwitchProCon = ({
   );
 
   const calcDirectionVertical = React.useCallback((axe: number) => {
-    if (axe <= 64) return "up"; // Up
-    if (axe >= 191) return "down"; // Down
+    if (axe <= 95) return "up"; // Up
+    if (axe >= 159) return "down"; // Down
     return "neutral";
   }, []);
 
   const calcDirectionHorizontal = React.useCallback((axe: number) => {
-    if (axe <= 64) return "left"; // Left
-    if (axe >= 191) return "right"; // Right
+    if (axe <= 95) return "left"; // Left
+    if (axe >= 159) return "right"; // Right
     return "neutral";
   }, []);
 
-  const roundValue = React.useCallback(
-    (val: number) =>
-      Math.floor(val / 32) * 32 - 1 > 0 ? Math.round(val / 32) * 32 - 1 : 0,
-    []
-  );
 
   const calc = React.useCallback(
     (val: number) => {
       const threshold = 40; //px
-      if (val >= threshold) return roundValue(256);
-      if (val <= -threshold) return roundValue(0);
-      return 128;
+      if (val >= threshold) return 1;
+      if (val <= -threshold) return -1;
+      return 0;
     },
-    [roundValue]
+    []
   );
 
   const onLeftStickMove = React.useCallback(
     (e: MouseEvent) => {
       if (!stickRef.current) return;
       const x = calc(e.clientX - stickRef.current.x);
-      const y = calc(e.clientY - stickRef.current.y);
-      const absX = Math.abs(e.clientX - stickRef.current.x);
-      const absY = Math.abs(e.clientY - stickRef.current.y);
-      if (absX > absY && x !== context.gamePad.stickStates[18])
-        props.onTilt(18, x);
-      if (absX < absY && y !== context.gamePad.stickStates[19])
-        props.onTilt(19, y);
-      setContext((c) => ({
-        ...c,
-        gamePad: {
-          ...c.gamePad,
-          stickStates: {
-            ...c.gamePad.stickStates,
-            18: x,
-            19: y,
-          },
-        },
-      }));
+      const y = calc(e.clientY - stickRef.current.y) * -1;
+      const absX = Math.abs(x);
+      const absY = Math.abs(y);
+      if (absX > absY)
+        props.onTilt("LeftStickX", x);
+      if (absX < absY)
+        props.onTilt("LeftStickY", y);
     },
-    [calc, context.gamePad.stickStates, props, setContext]
+    [calc, props]
   );
 
   const onRightStickMove = React.useCallback(
     (e: MouseEvent) => {
       if (!stickRef.current) return;
       const x = calc(e.clientX - stickRef.current.x);
-      const y = calc(e.clientY - stickRef.current.y);
-      const absX = Math.abs(e.clientX - stickRef.current.x);
-      const absY = Math.abs(e.clientY - stickRef.current.y);
-      if (absX > absY && x !== context.gamePad.stickStates[20])
-        props.onTilt(20, x);
-      if (absX < absY && y !== context.gamePad.stickStates[21])
-        props.onTilt(21, y);
-      setContext((c) => ({
-        ...c,
-        gamePad: {
-          ...c.gamePad,
-          stickStates: {
-            ...c.gamePad.stickStates,
-            20: x,
-            21: y,
-          },
-        },
-      }));
+      const y = calc(e.clientY - stickRef.current.y) * -1;
+      const absX = Math.abs(x);
+      const absY = Math.abs(y);
+      if (absX > absY)
+        props.onTilt("RightStickX", x);
+      if (absX < absY)
+        props.onTilt("RightStickY", y);
     },
-    [calc, context.gamePad.stickStates, props, setContext]
+    [calc, props]
   );
 
   const onStickUp = React.useCallback(
@@ -135,25 +109,13 @@ export const NintendoSwitchProCon = ({
       document.removeEventListener("mousemove", onLeftStickMove);
       document.removeEventListener("mousemove", onRightStickMove);
       document.removeEventListener("mouseup", onStickUp);
-      const neutral = 127;
-      setContext((c) => ({
-        ...c,
-        gamePad: {
-          ...c.gamePad,
-          stickStates: {
-            18: neutral,
-            19: neutral,
-            20: neutral,
-            21: neutral,
-          },
-        },
-      }));
-      props.onTilt(18, neutral);
-      props.onTilt(19, neutral);
-      props.onTilt(20, neutral);
-      props.onTilt(21, neutral);
+      const neutral = 0;
+      props.onTilt("LeftStickX", neutral);
+      props.onTilt("LeftStickY", neutral);
+      props.onTilt("RightStickX", neutral);
+      props.onTilt("RightStickY", neutral);
     },
-    [onLeftStickMove, onRightStickMove, props, setContext]
+    [onLeftStickMove, onRightStickMove, props]
   );
 
   const onStickDown = React.useCallback(
@@ -210,7 +172,7 @@ export const NintendoSwitchProCon = ({
         strokeWidth="4"
       />
       <path
-        d="M257 629.5C271 621.1 424.833 620.333 500 621C575.167 620.333 729 621.1 743 629.5C791.833 572.268 900.1 437.125 942.5 354.403C927.651 295.168 910.012 245.163 890 221C857.466 181.718 761.592 162.969 667 155.109C610 151 548 151 500 151C452 151 390 151 333 155.109C238.408 162.969 142.534 181.718 110 221C89.9878 245.163 72.3488 295.168 57.5 354.403C99.9 437.125 208.167 572.268 257 629.5Z"
+        d="M257 629.5C271 621.1 424.833 620.333 500 621C575.167 620.333 729 621.1 743 629.5C791.833 572.268 900.1 437.125 942.5 354.403C927.651 295.168 910.0162 245.163 890 221C857.466 181.718 761.592 162.969 667 155.109C610 151 548 151 500 151C452 151 390 151 333 155.109C238.408 162.969 142.534 181.718 110 221C89.9878 245.163 72.3488 295.168 57.5 354.403C99.9 437.125 208.167 572.268 257 629.5Z"
         fill="#23282B"
         stroke="black"
         strokeWidth="4"
@@ -225,10 +187,10 @@ export const NintendoSwitchProCon = ({
         cy="347"
         r="59"
         fill={
-          context.gamePad.stickStates[18] >= 191 ||
-          context.gamePad.stickStates[18] <= 64 ||
-          context.gamePad.stickStates[19] >= 191 ||
-          context.gamePad.stickStates[19] <= 64
+          context.gamePad.stickStates[18] >= 159 ||
+          context.gamePad.stickStates[18] <= 95 ||
+          context.gamePad.stickStates[19] >= 159 ||
+          context.gamePad.stickStates[19] <= 95
             ? activeColor
             : inactiveColor
         }
@@ -249,10 +211,10 @@ export const NintendoSwitchProCon = ({
         cy="483"
         r="59"
         fill={
-          context.gamePad.stickStates[20] >= 191 ||
-          context.gamePad.stickStates[20] <= 64 ||
-          context.gamePad.stickStates[21] >= 191 ||
-          context.gamePad.stickStates[21] <= 64
+          context.gamePad.stickStates[20] >= 159 ||
+          context.gamePad.stickStates[20] <= 95 ||
+          context.gamePad.stickStates[21] >= 159 ||
+          context.gamePad.stickStates[21] <= 95
             ? activeColor
             : inactiveColor
         }

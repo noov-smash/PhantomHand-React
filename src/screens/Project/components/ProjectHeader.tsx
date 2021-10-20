@@ -113,7 +113,7 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
       <InnerRight>
         <Time>
           <span className="material-icon">timer</span>
-          <span>{context.emulator.time.toFixed(2)}</span>
+          <span>{context.emulator.time.toFixed(3)}</span>
         </Time>
 
         {/* Record */}
@@ -202,13 +202,13 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
         )}
 
         {/* Save */}
-        {context.user.isSignedIn && context.user.isAdmin && (
+        {context.user.isSignedIn && (
           <Button
             {...{
               size: "s",
               color: "primary",
               text: "Save",
-              leftIcon: "cloud_upload",
+              leftIcon: context.user.isAdmin ? "cloud_upload" : "download",
               icon: "left",
             }}
             isInactive={

@@ -28,6 +28,7 @@ export interface SideMenuProps {
 
 export const SideMenu = (props: SideMenuProps) => {
   const { menu, onDragEnd, addNewGroup } = useSideMenu(props);
+
   return React.useMemo(() => {
     if (!menu) return <></>;
     return (
@@ -89,15 +90,7 @@ export const SideMenu = (props: SideMenuProps) => {
         </div>
       </Wrapper>
     );
-  }, [
-    addNewGroup,
-    menu,
-    onDragEnd,
-    props.index.id,
-    props.index.imageUrl,
-    props.index.title,
-    props.isEditable,
-  ]);
+  }, [addNewGroup, menu, onDragEnd, props.index.id, props.index.imageUrl, props.index.title, props.isEditable]);
 };
 
 export default SideMenu;
@@ -129,7 +122,7 @@ const Wrapper = styled.nav`
 `;
 
 const StyledDroppableArea = styled.div<{ isDraggingOver: boolean }>`
-${Layout.spacingBetweenElements("vertical", 0)};
+${Layout.spacingBetweenElements("vertical", 1)};
   user-select: "none";
   background: ${(props) =>
     props.isDraggingOver ? Colors.bgColorLv2 : "transparent"};

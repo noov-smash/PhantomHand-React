@@ -2,6 +2,7 @@ import React from "react";
 import uid from "uniqid";
 // Hooks
 import { useDatabase } from "../../../hooks/useDatabase";
+import { useEmulator } from "../../../hooks/useEmulator";
 import { LoadedProjectProps } from "../../../interfaces";
 import { Context } from "../../../hooks/Provider";
 // Interfaces
@@ -10,6 +11,7 @@ import { SideMenuProps } from "../components/SideMenu";
 import { NavFolderProps } from "../../../ui/parts/Navigation/NavFolder";
 import { NavIndexProps } from "../../../ui/parts/Navigation/NavIndex";
 import { NavItemProps } from "../../../ui/parts/Navigation/NavItem";
+import { NeutralGamepadProps } from "../../../hooks/Provider"
 
 export const useSideMenu = (props: SideMenuProps) => {
   type indexActionProps = {
@@ -38,9 +40,10 @@ export const useSideMenu = (props: SideMenuProps) => {
     | itemActionProps
     | folderItemActionProps;
   const [menu, setMenu] = React.useState<MenuGroupProps[]>();
-  const [activeItem, setActiveItem] = React.useState<string>();
   const [context, setContext] = React.useContext(Context);
+  const [activeItem, setActiveItem] = React.useState<string>()
   const { saveCommand, storeCommand } = useDatabase();
+  const { stopAll } = useEmulator();
   const menuRef = React.useRef(menu);
 
   React.useEffect(() => {
@@ -188,7 +191,7 @@ export const useSideMenu = (props: SideMenuProps) => {
       await saveCommand(props.index.id, saveData);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props.index.id, saveCommand]
+    [context.project.id, context.user.isAdmin, props.index.id, saveCommand, storeCommand]
   );
 
   const saveName = React.useCallback(
@@ -231,8 +234,7 @@ export const useSideMenu = (props: SideMenuProps) => {
       }
       save(newMenu);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [save]
+    [indexRightButtons, save]
   );
 
   const rename = React.useCallback(
@@ -371,7 +373,6 @@ export const useSideMenu = (props: SideMenuProps) => {
   const activateItem = React.useCallback(
     async (action: itemActionProps | folderItemActionProps): Promise<void> => {
       const newMenu = inactivateItems();
-
       if (!newMenu) return;
       const group = newMenu[action.groupIndex];
       const items =
@@ -388,23 +389,34 @@ export const useSideMenu = (props: SideMenuProps) => {
           : action.type === "folderItem"
           ? `${action.groupIndex}/folders/${action.folderIndex}/items/${action.itemIndex}`
           : "";
-      item._state = "active";
-      setActiveItem(item.id);
-      await save(newMenu);
+      item._state = "active"
+      setActiveItem(item.id)
+      save(newMenu);
+      stopAll()
       setContext((c) => ({
         ...c,
         emulator: {
           ...c.emulator,
-          command: {
+          command:  item._state === "active" ? {
             ...item.data,
             id: item.id,
             title: item.title,
             signals: item.data?.signals || [],
             path: path,
+          } : {
+            id: "",
+            title: "",
+            path: "",
+            signals: [],
           },
         },
+        gamePad: {
+          ...c.gamePad,
+          ...NeutralGamepadProps,
+        }
       }));
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [inactivateItems, save, setContext]
   );
 
@@ -422,7 +434,9 @@ export const useSideMenu = (props: SideMenuProps) => {
           ...action,
           itemIndex: i,
         }),
-        _state: item.id === activeItem ? "active" : "default",
+        _state: item.id === activeItem
+          ? "active"
+          : item._state || "default",
         _onClick: () =>
           activateItem({
             ...action,
@@ -579,7 +593,7 @@ export const useSideMenu = (props: SideMenuProps) => {
 
   React.useEffect(() => {
     if (props.data) setMenu(convert().toFormat(props.data));
-  }, [convert, props, props.data]);
+  }, [convert, props, props.data])
 
   return { menu, setMenu, onDragEnd, addNewGroup };
 };

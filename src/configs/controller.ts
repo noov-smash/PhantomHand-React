@@ -34,4 +34,9 @@ export const ProControllerButtonNames: { [key: number]: string } = {
   15: "→",
   16: "HOME",
   17: "CAPTURE",
+  18: "L-Stick (X)",
+  19: "L-Stick (Y)",
+  20: "R-Stick (X)",
+  21: "R-Stick (Y)",
+  99: "Void"
 };

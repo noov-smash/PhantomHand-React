@@ -9,6 +9,7 @@ import * as Layout from "../../../styles/Layout";
 import { Colors } from "../../../styles/Colors";
 // Components
 import { NintendoSwitchProCon } from "./NintendoSwitchProCon";
+import { CommandTable } from "../../../ui/systems/Table/CommandTable";
 // import { NoConnection } from "../ui/parts/GamePad/NoConnection";
 // Configs
 import { ProControllerButtonNames } from "../../../configs/controller";
@@ -22,7 +23,6 @@ export const GamePad: React.FC = () => {
     axisChangeHandler,
     onPush,
     onRelease,
-    onTilt,
   } = useGamePad();
 
   const calcBarWidth = React.useCallback(() => {
@@ -35,62 +35,80 @@ export const GamePad: React.FC = () => {
       <Wrapper>
         {context.emulator.command &&
           context.emulator.command.signals.length > 0 && (
-            <Container length={calcBarWidth()} />
+            <Bar length={calcBarWidth()} />
           )}
-        <Gamepad
-          gamepadIndex={0}
-          onConnect={(gamepadIndex) => connectHandler(gamepadIndex)}
-          onDisconnect={(gamepadIndex) => disconnectHandler(gamepadIndex)}
-          onButtonChange={buttonChangeHandler}
-          onAxisChange={axisChangeHandler}
-        >
-          <React.Fragment />
-        </Gamepad>
-        <NintendoSwitchProCon
-          onPush={onPush}
-          onRelease={onRelease}
-          onTilt={onTilt}
-        />
-        <Buttons>
-          {Object.keys(context.gamePad.buttonStates).map(
-            (button: any) =>
-              button < 18 &&
-              context.gamePad.buttonStates[button] && (
-                <li className="fs-xl fw-bold" key={button}>
-                  {ProControllerButtonNames[button]}
-                </li>
-              )
-          )}
-        </Buttons>
+
+          <Gamepad
+            gamepadIndex={0}
+            onConnect={(gamepadIndex) => connectHandler(gamepadIndex)}
+            onDisconnect={(gamepadIndex) => disconnectHandler(gamepadIndex)}
+            onButtonChange={buttonChangeHandler}
+            onAxisChange={axisChangeHandler}
+          >
+            <React.Fragment />
+          </Gamepad>
+
+          <StyledPreview>
+            <NintendoSwitchProCon
+              onPush={onPush}
+              onRelease={onRelease}
+              onTilt={axisChangeHandler}
+            />
+            <Buttons>
+              {Object.keys(context.gamePad.buttonStates).map(
+                (button: any) =>
+                  button < 18 &&
+                  context.gamePad.buttonStates[button] && (
+                    <li className="fs-xl fw-bold" key={button}>
+                      {ProControllerButtonNames[button]}
+                    </li>
+                  )
+              )}
+            </Buttons>
+            <Sticks>
+              <div>
+                <span>X: {context.gamePad.stickStates[18]}</span>
+                <span>Y: {context.gamePad.stickStates[19]}</span>
+              </div>
+              <div>
+                <span>X: {context.gamePad.stickStates[20]}</span>
+                <span>Y: {context.gamePad.stickStates[21]}</span>
+              </div>
+            </Sticks>
+            <StyledID>
+              {context.user.isSignedIn && context.user.uid}
+            </StyledID>
+          </StyledPreview>
+
+          <CommandTable signals ={context.emulator.command.signals}/>
       </Wrapper>
     );
-  }, [
-    axisChangeHandler,
-    buttonChangeHandler,
-    calcBarWidth,
-    connectHandler,
-    context.emulator.command,
-    context.gamePad.buttonStates,
-    disconnectHandler,
-    onRelease,
-    onPush,
-    onTilt,
-  ]);
+  }, [context.emulator.command, context.gamePad.stickStates, context.gamePad.buttonStates, context.user.isSignedIn, context.user.uid, calcBarWidth, buttonChangeHandler, axisChangeHandler, onPush, onRelease, connectHandler, disconnectHandler]);
 };
 
 const Wrapper = styled.div`
+  ${Layout.alignElements("inline-flex", "space-between", "space-between")};
+  flex-direction: column;
   position: relative;
-  display: grid;
-  place-items: center;
   width: 100%;
   height: 100%;
 `;
+
+const StyledPreview = styled.div`
+  display: grid;
+  place-items: center;
+  height: auto;
+  position: relative;
+  height: 100%;
+`
 
 const Buttons = styled.ul`
   ${Layout.alignElements("inline-flex", "center", "center")};
   ${Layout.spacingBetweenElements("horizontal", 1)};
   height: 32px;
   user-select: none;
+  position: absolute;
+  bottom: 40px;
   > li {
     ${Layout.centralizeInnerElement};
     height: 100%;
@@ -101,7 +119,24 @@ const Buttons = styled.ul`
   }
 `;
 
-const Container = styled.div.attrs<{ length: number }>((props) => ({
+const Sticks = styled.div`
+  ${Layout.spacingBetweenElements("horizontal", 2)};
+  color: ${Colors.elementColorWeak};
+  bottom: 90px;
+  position: absolute;
+  user-select: none;
+  > div {
+    ${Layout.spacingBetweenElements("vertical", 1/2)};
+    ${Layout.alignElements("inline-flex", "flex-start", "center")};
+    flex-direction: column;
+    > span {
+      width: 48px;
+      display: inline-block;
+    }
+  }
+`
+
+const Bar = styled.div.attrs<{ length: number }>((props) => ({
   style: {
     width: `${props.length}%`,
   },
@@ -112,3 +147,11 @@ const Container = styled.div.attrs<{ length: number }>((props) => ({
   height: 2px;
   background-color: ${Colors.brandColorPrimary};
 `;
+
+const StyledID = styled.span`
+  position: absolute;
+  bottom: 4px;
+  right: 8px;
+  color: ${Colors.elementColorMute};
+  font-size: 9px;
+`

@@ -19,22 +19,25 @@ export const useGamePad = () => {
       const encoder = new TextEncoder();
       try {
         if (context.emulator.state === "recording") {
-          setContext((c: ContextProps) => ({
-            ...c,
-            emulator: {
-              ...c.emulator,
-              command: {
-                ...c.emulator.command,
-                signals: c.emulator.command.signals?.concat([
-                  {
-                    t: Number(c.emulator.time.toFixed(2)),
-                    s: data,
-                  },
-                ]),
+          setContext((c: ContextProps) => {
+            return {
+              ...c,
+              emulator: {
+                ...c.emulator,
+                command: {
+                  ...c.emulator.command,
+                  signals: c.emulator.command.signals?.concat([
+                    {
+                      t: Number(c.emulator.time.toFixed(3)),
+                      s: data,
+                    },
+                  ]),
+                },
               },
-            },
-          }));
+            }
+          });
         }
+        if (data[0] === 99) return
         // USB Serial
         if (context.usb.isConnected) {
           await sendToUsbDevice(context.usb.device, [
@@ -141,12 +144,24 @@ export const useGamePad = () => {
         const data = new Uint8Array(2);
         data[0] = stick;
         data[1] = val;
-        await sendToDevice(data);
+        setContext((c: ContextProps) => {
+          if (c.gamePad.stickStates[stick] !== val) sendToDevice(data);
+          return {
+            ...c,
+            gamePad: {
+              ...c.gamePad,
+              stickStates: {
+                ...c.gamePad.stickStates,
+                [stick]: val,
+              },
+            },
+          }
+        });
       } catch (error) {
         console.error(error);
       }
     },
-    [sendToDevice]
+    [sendToDevice, setContext]
   );
 
   const buttonChangeHandler = React.useCallback(
@@ -179,27 +194,17 @@ export const useGamePad = () => {
           stickNumber === 19 || stickNumber === 21
             ? convert(value * -1)
             : convert(value);
+        const magnification = 48
         const roundedValue =
-          Math.floor(convertedValue / 32) * 32 - 1 > 0
-            ? Math.round(convertedValue / 32) * 32 - 1
+          Math.floor(convertedValue / magnification) * magnification - 1 > 0
+            ? Math.round(convertedValue / magnification) * magnification - 1
             : 0;
-        setContext((c: ContextProps) => ({
-          ...c,
-          gamePad: {
-            ...c.gamePad,
-            stickStates: {
-              ...c.gamePad.stickStates,
-              [stickNumber]: roundedValue,
-            },
-          },
-        }));
-        if (context.gamePad.stickStates[stickNumber] !== roundedValue)
-          onTilt(stickNumber, roundedValue);
+        onTilt(stickNumber, roundedValue);
       } catch (error) {
         console.error(error);
       }
     },
-    [convert, context.gamePad.stickStates, setContext, onTilt]
+    [convert, onTilt]
   );
 
   return {
