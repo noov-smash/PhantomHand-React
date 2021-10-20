@@ -85,7 +85,7 @@ return React.useMemo(() => {
         <thead>
           <tr>
             <th className='number'></th>
-            <th className='time'>Time (s)</th>
+            <th className='time'>Time (sec)</th>
             <th className='button'>Button</th>
             <th className='value'>Value</th>
             <th className='action'></th>
