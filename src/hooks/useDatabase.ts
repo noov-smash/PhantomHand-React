@@ -65,17 +65,20 @@ export const useDatabase = () => {
     []
   );
 
-  const storeCommand = React.useCallback( (projectId: string, data: any): void => {
-    console.log("Store Commands...");
-    localStorage.setItem(`PhantomHand-${projectId}`, JSON.stringify(data))
-    setContext((c) => ({
-      ...c,
-      project: {
-        ...c.project,
-        data: data
-      },
-    }));
-  }, [setContext])
+  const storeCommand = React.useCallback(
+    (projectId: string, data: any): void => {
+      console.log("Store Commands...");
+      localStorage.setItem(`PhantomHand-${projectId}`, JSON.stringify(data));
+      setContext((c) => ({
+        ...c,
+        project: {
+          ...c.project,
+          data: data,
+        },
+      }));
+    },
+    [setContext]
+  );
 
   const pushCommand = React.useCallback(
     async (path: string, data: any): Promise<void> => {
@@ -133,20 +136,22 @@ export const useDatabase = () => {
     }
   }, []);
 
-
   const fetchProject = React.useCallback(
-    async (id: string, isAdmin?: boolean): Promise<FirebaseProjectProps | null> => {
+    async (
+      id: string,
+      isAdmin?: boolean
+    ): Promise<FirebaseProjectProps | null> => {
       console.log("Fetching Project...");
       try {
         const ref = await firestore.collection("Projects").doc(id).get();
         const data: firebase.firestore.DocumentData | undefined = ref.data();
-        const storage = localStorage.getItem(`PhantomHand-${id}`)
+        const storage = localStorage.getItem(`PhantomHand-${id}`);
 
         const commands = isAdmin
           ? await watchCommands(id)
           : storage
-            ? JSON.parse(storage)
-            : await fetchCommands(id)
+          ? JSON.parse(storage)
+          : await fetchCommands(id);
 
         return data
           ? {

@@ -12,19 +12,18 @@ const bitly = new BitlyClient(process.env.REACT_APP_BITLY_TOKEN || "");
 
 export const useEmulator = () => {
   const [context, setContext] = React.useContext(Context);
-  const [buffer, setBuffer] = React.useState<SignalProps[]>()
+  const [buffer, setBuffer] = React.useState<SignalProps[]>();
   const intervalRef = React.useRef<NodeJS.Timeout | null>();
   const { saveCommand, storeCommand } = useDatabase();
   const { onPush, onTilt, neutral } = useGamePad();
 
-  const bufferRef = React.useRef(buffer)
-  React.useEffect( () => {
-    bufferRef.current = buffer
-  },[buffer])
+  const bufferRef = React.useRef(buffer);
+  React.useEffect(() => {
+    bufferRef.current = buffer;
+  }, [buffer]);
 
   const stopRec = React.useCallback((): void => {
     console.log("Stop...");
-    neutral()
     setContext((c: ContextProps) => ({
       ...c,
       emulator: {
@@ -34,7 +33,7 @@ export const useEmulator = () => {
           ...c.emulator.command,
           signals: c.emulator.command.signals?.concat([
             {
-              t: Number(c.emulator.time.toFixed(3)),
+              t: Number(c.emulator.time.toFixed(2)),
               s: new Uint8Array([99, 0]),
             },
           ]),
@@ -45,11 +44,11 @@ export const useEmulator = () => {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
+    neutral();
   }, [neutral, setContext]);
 
   const stopPlay = React.useCallback((): void => {
     console.log("Stop...");
-    neutral()
     setContext((c: ContextProps) => ({
       ...c,
       emulator: { ...c.emulator, state: "standby", time: 0 },
@@ -58,47 +57,59 @@ export const useEmulator = () => {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
+    neutral();
   }, [neutral, setContext]);
 
-  const stopAll = React.useCallback( (): void => {
-    if(context.emulator.state === "playing" || context.emulator.state === "repeating") stopPlay()
-    if(context.emulator.state === "recording") stopRec()
-  },[context.emulator.state, stopPlay, stopRec])
+  const stopAll = React.useCallback((): void => {
+    if (
+      context.emulator.state === "playing" ||
+      context.emulator.state === "repeating"
+    )
+      stopPlay();
+    if (context.emulator.state === "recording") stopRec();
+  }, [context.emulator.state, stopPlay, stopRec]);
 
   const recInterval = React.useCallback((): void => {
     setContext((c: ContextProps) => ({
       ...c,
       emulator: {
         ...c.emulator,
-        time: Number((c.emulator.time + 0.01).toFixed(3))
+        time: Number((c.emulator.time + 1 / 60).toFixed(2)),
       },
     }));
   }, [setContext]);
 
-  const isTimeOver = React.useCallback( (time: number) => {
-    const lastCommand =
-      context.emulator.command.signals[context.emulator.command.signals.length - 1]
-    return lastCommand.t <= time
-  },[context.emulator.command.signals])
+  const isTimeOver = React.useCallback(
+    (time: number) => {
+      const lastCommand =
+        context.emulator.command.signals[
+          context.emulator.command.signals.length - 1
+        ];
+      return lastCommand.t <= time;
+    },
+    [context.emulator.command.signals]
+  );
 
   const playInterval = React.useCallback(async (): Promise<void> => {
     setContext((c: ContextProps) => {
-      if (!bufferRef.current) return {...c}
-      const time = Number((c.emulator.time + 0.01).toFixed(3));
-      
-      const data = bufferRef.current.filter((b) => b.t === time)
-      if(!data) return {...c}
-      Promise.all(data.map( d => {
-        if (d.s[0] <= 17) return onPush(d.s[0], d.s[1] === 1 ? true : false);
-        else if (18 <= d.s[0] && d.s[0] <= 21 ) return onTilt(d.s[0], d.s[1]);
-        return null
-      }))
+      if (!bufferRef.current) return { ...c };
+      const time = Number((c.emulator.time + 1 / 60).toFixed(2));
+
+      const data = bufferRef.current.filter((b) => b.t === time);
+      if (!data) return { ...c };
+      Promise.all(
+        data.map((d) => {
+          if (d.s[0] <= 17) return onPush(d.s[0], d.s[1] === 1 ? true : false);
+          else if (18 <= d.s[0] && d.s[0] <= 21) return onTilt(d.s[0], d.s[1]);
+          return null;
+        })
+      );
 
       // If it over record time, stop timer
       if (isTimeOver(time)) {
         if (c.emulator.state === "playing") stopPlay();
         else if (c.emulator.state === "repeating") {
-          setBuffer(context.emulator.command.signals)
+          setBuffer(context.emulator.command.signals);
           return {
             ...c,
             emulator: { ...c.emulator, state: "repeating", time: 0 },
@@ -114,7 +125,14 @@ export const useEmulator = () => {
         },
       };
     });
-  }, [context.emulator.command.signals, isTimeOver, onPush, onTilt, setContext, stopPlay]);
+  }, [
+    context.emulator.command.signals,
+    isTimeOver,
+    onPush,
+    onTilt,
+    setContext,
+    stopPlay,
+  ]);
 
   const rec = React.useCallback((): void => {
     console.log("Rec...");
@@ -130,12 +148,15 @@ export const useEmulator = () => {
         },
       },
     }));
-    intervalRef.current = setInterval(recInterval, 10);
+    intervalRef.current = setInterval(recInterval, 1000/60);
   }, [recInterval, setContext]);
 
   const play = React.useCallback(
     (repeat: boolean): void => {
-      console.log(repeat ? "Repeat..." : "Play...", context.emulator.command.signals);
+      console.log(
+        repeat ? "Repeat..." : "Play...",
+        context.emulator.command.signals
+      );
       setContext((c: ContextProps) => ({
         ...c,
         emulator: {
@@ -144,8 +165,8 @@ export const useEmulator = () => {
           time: 0,
         },
       }));
-      setBuffer(context.emulator.command.signals)
-      intervalRef.current = setInterval(playInterval, 10);
+      setBuffer(context.emulator.command.signals);
+      intervalRef.current = setInterval(playInterval, 1000/60);
     },
     [context.emulator.command.signals, playInterval, setContext]
   );
@@ -155,7 +176,7 @@ export const useEmulator = () => {
     console.log("Saving...", context.emulator.command.signals);
     try {
       // AminUser
-      if(context.user.isAdmin) {
+      if (context.user.isAdmin) {
         if (context.emulator.command.path) {
           await saveCommand(
             `${context.project.id}/${context.emulator.command.path}`,
@@ -187,26 +208,35 @@ export const useEmulator = () => {
       }
       // AnonymousUser
       else {
-        if(!context.project.id) return
-        const storage = localStorage.getItem(`PhantomHand-${context.project.id}`)
-        if(!storage || !context.project.data) return
-        const path: string[] = context.emulator.command.path.split("/")
-        const newData: any = Array.from(context.project.data)
-        if (path.length ===1 || !newData) return
+        if (!context.project.id) return;
+        const storage = localStorage.getItem(
+          `PhantomHand-${context.project.id}`
+        );
+        if (!storage || !context.project.data) return;
+        const path: string[] = context.emulator.command.path.split("/");
+        const newData: any = Array.from(context.project.data);
+        if (path.length === 1 || !newData) return;
         if (path.length === 3) {
-          newData[path[0]][path[1]][path[2]].data = context.emulator.command
+          newData[path[0]][path[1]][path[2]].data = context.emulator.command;
+        } else if (path.length === 5) {
+          newData[path[0]][path[1]][path[2]][path[3]][path[4]].data =
+            context.emulator.command;
         }
-        else if (path.length === 5){
-          newData[path[0]][path[1]][path[2]][path[3]][path[4]].data = context.emulator.command
-        }
-        await storeCommand(context.project.id, newData)
+        await storeCommand(context.project.id, newData);
         window.alert("Updated LocalStorage");
       }
     } catch (error) {
       window.alert("Failed");
       console.error(error);
     }
-  }, [context.emulator.command, context.project.data, context.project.id, context.user.isAdmin, saveCommand, storeCommand]);
+  }, [
+    context.emulator.command,
+    context.project.data,
+    context.project.id,
+    context.user.isAdmin,
+    saveCommand,
+    storeCommand,
+  ]);
 
   const share = React.useCallback(async (): Promise<void> => {
     try {
@@ -233,6 +263,6 @@ export const useEmulator = () => {
     stopPlay,
     save,
     share,
-    stopAll
+    stopAll,
   };
 };

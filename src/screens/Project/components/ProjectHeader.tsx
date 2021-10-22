@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React from "react";
 import uid from "uniqid";
 // Hooks
@@ -30,210 +29,236 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
     findUsbDevices();
   }, [findUsbDevices]);
 
-  return (
-    <Wrapper>
-      {/*----- Left -----*/}
-      <InnerLeft>
-        {/* Controller*/}
-        <Device>
-          {context.gamePad.isConnected ? (
-            <>
-              <span className="material-icon fs-xs on">wifi</span>
-              <span className="material-icon fs-xl">sports_esports</span>
-            </>
+  return React.useMemo(
+    () => (
+      <Wrapper>
+        {/*----- Left -----*/}
+        <InnerLeft>
+          {/* Controller*/}
+          <Device>
+            {context.gamePad.isConnected ? (
+              <>
+                <span className="material-icon fs-xs on">wifi</span>
+                <span className="material-icon fs-xl">sports_esports</span>
+              </>
+            ) : (
+              <span className="material-icon fs-xl off">sports_esports</span>
+            )}
+          </Device>
+
+          {/* USB */}
+          <IconDropdownButton
+            id={uid()}
+            color={context.usb.isConnected ? "outlinePrimary" : "outline"}
+            shape="square"
+            size="s"
+            icon="usb"
+            positionY="bottom"
+            dropdown={
+              context.usb.isConnected
+                ? [
+                    {
+                      state: "active",
+                      leftText: context.usb.device.productName || "usb",
+                      leftIcon: "usb",
+                      rightIcon: "close",
+                      onClick: disconnectUsbDevice,
+                    },
+                  ]
+                : [
+                    {
+                      state: "default",
+                      leftText: "Search Device",
+                      leftIcon: "wifi_tethering",
+                      onClick: connectToUsbDevice,
+                    },
+                  ]
+            }
+          />
+
+          {/* Bluetooth */}
+          <IconDropdownButton
+            id={uid()}
+            color={context.bluetooth.isConnected ? "outlinePrimary" : "outline"}
+            shape="square"
+            size="s"
+            icon={
+              context.bluetooth.isConnected
+                ? "bluetooth_connected"
+                : "bluetooth"
+            }
+            positionY="bottom"
+            dropdown={
+              context.bluetooth.isConnected
+                ? [
+                    {
+                      state: "active",
+                      leftText: context.bluetooth.device.name || "bluetooth",
+                      leftIcon: "bluetooth_disabled",
+                      rightIcon: "close",
+                      onClick: disconnectBluetooth,
+                    },
+                  ]
+                : [
+                    {
+                      state: "default",
+                      leftText: "Search Device",
+                      leftIcon: "wifi_tethering",
+                      onClick: connectToBluetoothDevice,
+                    },
+                  ]
+            }
+          />
+        </InnerLeft>
+
+        {/*----- Right -----*/}
+        <InnerRight>
+          <Time>
+            <span className="material-icon">timer</span>
+            <span>{context.emulator.time.toFixed(2)}</span>
+          </Time>
+
+          {/* Record */}
+          {context.emulator.state === "recording" ? (
+            <IconButton
+              {...{
+                icon: "stop",
+                color: "orange",
+                size: "s",
+                shape: "square",
+              }}
+              onClick={stopRec}
+            />
           ) : (
-            <span className="material-icon fs-xl off">sports_esports</span>
+            <IconButton
+              {...{
+                icon: "radio_button_checked",
+                color: "red",
+                size: "s",
+                shape: "square",
+              }}
+              onClick={rec}
+              isInactive={
+                context.emulator.state === "playing" ||
+                context.emulator.state === "repeating"
+              }
+            />
           )}
-        </Device>
 
-        {/* USB */}
-        <IconDropdownButton
-          id={uid()}
-          color={context.usb.isConnected ? "outlinePrimary" : "outline"}
-          shape="square"
-          size="s"
-          icon="usb"
-          positionY="bottom"
-          dropdown={
-            context.usb.isConnected
-              ? [
-                  {
-                    state: "active",
-                    leftText: context.usb.device.productName || "usb",
-                    leftIcon: "usb",
-                    rightIcon: "close",
-                    onClick: disconnectUsbDevice,
-                  },
-                ]
-              : [
-                  {
-                    state: "default",
-                    leftText: "Search Device",
-                    leftIcon: "wifi_tethering",
-                    onClick: connectToUsbDevice,
-                  },
-                ]
-          }
-        />
+          {/* Play */}
+          {context.emulator.state === "playing" ? (
+            <IconButton
+              {...{
+                icon: "stop",
+                color: "orange",
+                size: "s",
+                shape: "square",
+              }}
+              isInactive={context.emulator.command.signals.length === 0}
+              onClick={stopPlay}
+            />
+          ) : (
+            <IconButton
+              {...{
+                icon: "play_arrow",
+                color: "blue",
+                size: "s",
+                shape: "square",
+              }}
+              isInactive={
+                context.emulator.state === "recording" ||
+                context.emulator.state === "repeating" ||
+                context.emulator.command.signals.length === 0
+              }
+              onClick={() => play(false)}
+            />
+          )}
 
-        {/* Bluetooth */}
-        <IconDropdownButton
-          id={uid()}
-          color={context.bluetooth.isConnected ? "outlinePrimary" : "outline"}
-          shape="square"
-          size="s"
-          icon={
-            context.bluetooth.isConnected ? "bluetooth_connected" : "bluetooth"
-          }
-          positionY="bottom"
-          dropdown={
-            context.bluetooth.isConnected
-              ? [
-                  {
-                    state: "active",
-                    leftText: context.bluetooth.device.name || "bluetooth",
-                    leftIcon: "bluetooth_disabled",
-                    rightIcon: "close",
-                    onClick: disconnectBluetooth,
-                  },
-                ]
-              : [
-                  {
-                    state: "default",
-                    leftText: "Search Device",
-                    leftIcon: "wifi_tethering",
-                    onClick: connectToBluetoothDevice,
-                  },
-                ]
-          }
-        />
-      </InnerLeft>
+          {/* Repeat */}
+          {context.emulator.state === "repeating" ? (
+            <IconButton
+              {...{
+                icon: "stop",
+                color: "orange",
+                size: "s",
+                shape: "square",
+              }}
+              isInactive={context.emulator.command.signals.length === 0}
+              onClick={stopPlay}
+            />
+          ) : (
+            <IconButton
+              {...{
+                icon: "repeat",
+                color: "green",
+                size: "s",
+                shape: "square",
+              }}
+              isInactive={
+                context.emulator.state === "recording" ||
+                context.emulator.state === "playing" ||
+                context.emulator.command.signals.length === 0
+              }
+              onClick={() => play(true)}
+            />
+          )}
 
-      {/*----- Right -----*/}
-      <InnerRight>
-        <Time>
-          <span className="material-icon">timer</span>
-          <span>{context.emulator.time.toFixed(3)}</span>
-        </Time>
-
-        {/* Record */}
-        {context.emulator.state === "recording" ? (
-          <IconButton
-            {...{
-              icon: "stop",
-              color: "orange",
-              size: "s",
-              shape: "square",
-            }}
-            onClick={stopRec}
-          />
-        ) : (
-          <IconButton
-            {...{
-              icon: "radio_button_checked",
-              color: "red",
-              size: "s",
-              shape: "square",
-            }}
-            onClick={rec}
-            isInactive={
-              context.emulator.state === "playing" ||
-              context.emulator.state === "repeating"
-            }
-          />
-        )}
-
-        {/* Play */}
-        {context.emulator.state === "playing" ? (
-          <IconButton
-            {...{
-              icon: "stop",
-              color: "orange",
-              size: "s",
-              shape: "square",
-            }}
-            isInactive={context.emulator.command.signals.length === 0}
-            onClick={stopPlay}
-          />
-        ) : (
-          <IconButton
-            {...{
-              icon: "play_arrow",
-              color: "blue",
-              size: "s",
-              shape: "square",
-            }}
-            isInactive={
-              context.emulator.state === "recording" ||
-              context.emulator.state === "repeating" ||
-              context.emulator.command.signals.length === 0
-            }
-            onClick={() => play(false)}
-          />
-        )}
-
-        {/* Repeat */}
-        {context.emulator.state === "repeating" ? (
-          <IconButton
-            {...{
-              icon: "stop",
-              color: "orange",
-              size: "s",
-              shape: "square",
-            }}
-            isInactive={context.emulator.command.signals.length === 0}
-            onClick={stopPlay}
-          />
-        ) : (
-          <IconButton
-            {...{
-              icon: "repeat",
-              color: "green",
-              size: "s",
-              shape: "square",
-            }}
-            isInactive={
-              context.emulator.state === "recording" ||
-              context.emulator.state === "playing" ||
-              context.emulator.command.signals.length === 0
-            }
-            onClick={() => play(true)}
-          />
-        )}
-
-        {/* Save */}
-        {context.user.isSignedIn && (
+          {/* Save */}
+          {context.user.isSignedIn && (
+            <Button
+              {...{
+                size: "s",
+                color: "primary",
+                text: "Save",
+                leftIcon: context.user.isAdmin ? "cloud_upload" : "download",
+                icon: "left",
+              }}
+              isInactive={
+                context.emulator.state === "recording" ||
+                context.emulator.command.signals.length === 0
+              }
+              onClick={save}
+            />
+          )}
           <Button
             {...{
               size: "s",
-              color: "primary",
-              text: "Save",
-              leftIcon: context.user.isAdmin ? "cloud_upload" : "download",
+              color: "outline",
+              text: "Share",
+              leftIcon: "share",
               icon: "left",
             }}
             isInactive={
               context.emulator.state === "recording" ||
               context.emulator.command.signals.length === 0
             }
-            onClick={save}
+            onClick={share}
           />
-        )}
-        <Button
-          {...{
-            size: "s",
-            color: "outline",
-            text: "Share",
-            leftIcon: "share",
-            icon: "left",
-          }}
-          isInactive={
-            context.emulator.state === "recording" ||
-            context.emulator.command.signals.length === 0
-          }
-          onClick={share}
-        />
-      </InnerRight>
-    </Wrapper>
+        </InnerRight>
+      </Wrapper>
+    ),
+    [
+      connectToBluetoothDevice,
+      connectToUsbDevice,
+      context.bluetooth.device?.name,
+      context.bluetooth.isConnected,
+      context.emulator.command.signals.length,
+      context.emulator.state,
+      context.emulator.time,
+      context.gamePad.isConnected,
+      context.usb.device?.productName,
+      context.usb.isConnected,
+      context.user.isAdmin,
+      context.user.isSignedIn,
+      disconnectBluetooth,
+      disconnectUsbDevice,
+      play,
+      rec,
+      save,
+      share,
+      stopPlay,
+      stopRec,
+    ]
   );
 };
 
@@ -280,5 +305,5 @@ const Device = styled.div`
 const Time = styled.div`
   ${Layout.alignElements("flex", "flex-start", "center")};
   ${Layout.spacingBetweenElements("horizontal", 1 / 2)};
-  width: 64px;
+  min-width: 64px;
 `;

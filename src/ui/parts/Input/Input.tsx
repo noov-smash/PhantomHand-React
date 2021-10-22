@@ -21,29 +21,45 @@ export const TextInput = (props: TextInputProps) => {
     inputRef.current?.select();
   }, [inputRef]);
 
-  const changeText = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setText(e.target.value);
-  };
+  const changeText = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setText(e.target.value);
+    },
+    []
+  );
 
-  const onPressEnter = (e: any) => {
-    if (e.key === "Enter" && props.onClickOutside) {
-      props.onClickOutside(e);
-    }
-  };
+  const onPressEnter = React.useCallback(
+    (e: any) => {
+      if (e.key === "Enter" && props.onClickOutside) {
+        props.onClickOutside(e);
+      }
+    },
+    [props]
+  );
 
-  return (
-    <StyledInput className="input-text">
-      <input
-        type={props.inputType}
-        required={props.required}
-        placeholder="Type Here..."
-        value={text}
-        onChange={changeText}
-        onBlur={props.onClickOutside}
-        onKeyPress={(e) => onPressEnter(e)}
-        ref={inputRef}
-      />
-    </StyledInput>
+  return React.useMemo(
+    () => (
+      <StyledInput className="input-text">
+        <input
+          type={props.inputType}
+          required={props.required}
+          placeholder="Type Here..."
+          value={text}
+          onChange={changeText}
+          onBlur={props.onClickOutside}
+          onKeyPress={(e) => onPressEnter(e)}
+          ref={inputRef}
+        />
+      </StyledInput>
+    ),
+    [
+      changeText,
+      onPressEnter,
+      props.inputType,
+      props.onClickOutside,
+      props.required,
+      text,
+    ]
   );
 };
 

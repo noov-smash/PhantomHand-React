@@ -34,10 +34,10 @@ export const useGamePad = () => {
                   ]),
                 },
               },
-            }
+            };
           });
         }
-        if (data[0] === 99) return
+        if (data[0] === 99) return;
         // USB Serial
         if (context.usb.isConnected) {
           await sendToUsbDevice(context.usb.device, [
@@ -155,7 +155,7 @@ export const useGamePad = () => {
                 [stick]: val,
               },
             },
-          }
+          };
         });
       } catch (error) {
         console.error(error);
@@ -194,10 +194,12 @@ export const useGamePad = () => {
           stickNumber === 19 || stickNumber === 21
             ? convert(value * -1)
             : convert(value);
-        const magnification = 32
+        const magnification = 32;
         const roundedValue =
-          Math.floor(convertedValue / magnification) * magnification - 1 > 0
-            ? Math.round(convertedValue / magnification) * magnification - 1
+          Math.floor(convertedValue / magnification) * magnification > 0
+            ? Math.round(convertedValue / magnification) * magnification === 256
+              ? 255
+              : Math.round(convertedValue / magnification) * magnification
             : 0;
         onTilt(stickNumber, roundedValue);
       } catch (error) {
@@ -207,15 +209,15 @@ export const useGamePad = () => {
     [convert, onTilt]
   );
 
-  const neutral = React.useCallback( () => {
+  const neutral = React.useCallback(() => {
     axisChangeHandler("LeftStickX", 0);
     axisChangeHandler("LeftStickY", 0);
     axisChangeHandler("RightStickX", 0);
     axisChangeHandler("RightStickY", 0);
-    for(let i=0; i < 18; i++ ) {
-      onRelease(i)
+    for (let i = 0; i < 18; i++) {
+      onRelease(i);
     }
-  }, [axisChangeHandler, onRelease])
+  }, [axisChangeHandler, onRelease]);
 
   return {
     connectHandler,

@@ -1,22 +1,26 @@
 # PhantomHand React
-  
+
 Control and automate Nintendo Switch from a browser. A tool developed with React and Arduino.  
 This repository contains the React source code for PhantomHand.
+
 ## Readme
+
 [PhantomHand](https://github.com/noov-smash/PhantomHand#readme)  
-[Getting Started Guide](https://zenn.dev/noov/articles/8afaf41678dfa7)  
+[Getting Started Guide](https://zenn.dev/noov/articles/8afaf41678dfa7)
 
 ---
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Local Development
-This project assumes a Firebase connection.  
+
+This project assumes a Firebase connection.
 
 If you want to start the project on your local machine, do the following
 
 1. Create a new Firebase project.
 2. Create an `.env` file in the root. And rewrite the values to those of your project.
+
 ```.env
 REACT_APP_FIREBASE_API_KEY="SOME_VALUE"
 REACT_APP_FIREBASE_OAUTH_DOMAIN="SOME_VALUE"

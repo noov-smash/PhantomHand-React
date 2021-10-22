@@ -14,11 +14,12 @@ export interface DropdownProps {
 }
 
 export const Dropdown = (props: DropdownProps) => {
-  return (
-    <StyledList
-      state={props.state}
-      onClick={props.onClick}
-      className={`
+  return React.useMemo(
+    () => (
+      <StyledList
+        state={props.state}
+        onClick={props.onClick}
+        className={`
         dropdown-list--${props.state}
         ${
           props.options && props.options.indexOf("showBorder") !== -1
@@ -26,46 +27,56 @@ export const Dropdown = (props: DropdownProps) => {
             : ""
         }
     `}
-    >
-      <div className="left">
-        {props.leftIcon && (
-          <span
-            className={`
+      >
+        <div className="left">
+          {props.leftIcon && (
+            <span
+              className={`
               left__icon
               material-icon
           `}
-          >
-            {props.leftIcon}
-          </span>
-        )}
-        {props.leftText && (
-          <span className={`left__text`}>{props.leftText}</span>
-        )}
-      </div>
-      <div className="right">
-        {props.rightText && (
-          <span
-            className={`
+            >
+              {props.leftIcon}
+            </span>
+          )}
+          {props.leftText && (
+            <span className={`left__text`}>{props.leftText}</span>
+          )}
+        </div>
+        <div className="right">
+          {props.rightText && (
+            <span
+              className={`
             right__text
             fs-s
           `}
-          >
-            {props.rightText}
-          </span>
-        )}
-        {props.rightIcon && (
-          <span
-            className={`
+            >
+              {props.rightText}
+            </span>
+          )}
+          {props.rightIcon && (
+            <span
+              className={`
               right__icon
               material-icon
               fs-s
           `}
-          >
-            {props.rightIcon}
-          </span>
-        )}
-      </div>
-    </StyledList>
+            >
+              {props.rightIcon}
+            </span>
+          )}
+        </div>
+      </StyledList>
+    ),
+    [
+      props.leftIcon,
+      props.leftText,
+      props.onClick,
+      props.options,
+      props.rightIcon,
+      props.rightText,
+      props.state,
+    ]
   );
 };
 

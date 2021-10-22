@@ -9,7 +9,7 @@ import * as Layout from "../../../styles/Layout";
 import { Colors } from "../../../styles/Colors";
 // Components
 import { NintendoSwitchProCon } from "./NintendoSwitchProCon";
-import { CommandTable } from "../../../ui/systems/Table/CommandTable";
+import { CommandTable } from "./CommandTable";
 // import { NoConnection } from "../ui/parts/GamePad/NoConnection";
 // Configs
 import { ProControllerButtonNames } from "../../../configs/controller";
@@ -38,52 +38,63 @@ export const GamePad: React.FC = () => {
             <Bar length={calcBarWidth()} />
           )}
 
-          <Gamepad
-            gamepadIndex={0}
-            onConnect={(gamepadIndex) => connectHandler(gamepadIndex)}
-            onDisconnect={(gamepadIndex) => disconnectHandler(gamepadIndex)}
-            onButtonChange={buttonChangeHandler}
-            onAxisChange={axisChangeHandler}
-          >
-            <React.Fragment />
-          </Gamepad>
+        <Gamepad
+          gamepadIndex={0}
+          onConnect={(gamepadIndex) => connectHandler(gamepadIndex)}
+          onDisconnect={(gamepadIndex) => disconnectHandler(gamepadIndex)}
+          onButtonChange={buttonChangeHandler}
+          onAxisChange={axisChangeHandler}
+        >
+          <React.Fragment />
+        </Gamepad>
 
-          <StyledPreview>
-            <NintendoSwitchProCon
-              onPush={onPush}
-              onRelease={onRelease}
-              onTilt={axisChangeHandler}
-            />
-            <Buttons>
-              {Object.keys(context.gamePad.buttonStates).map(
-                (button: any) =>
-                  button < 18 &&
-                  context.gamePad.buttonStates[button] && (
-                    <li className="fs-xl fw-bold" key={button}>
-                      {ProControllerButtonNames[button]}
-                    </li>
-                  )
-              )}
-            </Buttons>
-            <Sticks>
-              <div>
-                <span>X: {context.gamePad.stickStates[18]}</span>
-                <span>Y: {context.gamePad.stickStates[19]}</span>
-              </div>
-              <div>
-                <span>X: {context.gamePad.stickStates[20]}</span>
-                <span>Y: {context.gamePad.stickStates[21]}</span>
-              </div>
-            </Sticks>
-            <StyledID>
-              {context.user.isSignedIn && context.user.uid}
-            </StyledID>
-          </StyledPreview>
+        <StyledPreview>
+          <NintendoSwitchProCon
+            onPush={onPush}
+            onRelease={onRelease}
+            onTilt={axisChangeHandler}
+          />
+          <Buttons>
+            {Object.keys(context.gamePad.buttonStates).map(
+              (button: any) =>
+                button < 18 &&
+                context.gamePad.buttonStates[button] && (
+                  <li className="fs-xl fw-bold" key={button}>
+                    {ProControllerButtonNames[button]}
+                  </li>
+                )
+            )}
+          </Buttons>
+          <Sticks>
+            <div>
+              <span>X: {context.gamePad.stickStates[18]}</span>
+              <span>Y: {context.gamePad.stickStates[19]}</span>
+            </div>
+            <div>
+              <span>X: {context.gamePad.stickStates[20]}</span>
+              <span>Y: {context.gamePad.stickStates[21]}</span>
+            </div>
+          </Sticks>
+          <StyledID>{context.user.isSignedIn && context.user.uid}</StyledID>
+        </StyledPreview>
 
-          <CommandTable signals ={context.emulator.command.signals}/>
+        <CommandTable signals={context.emulator.command.signals} />
       </Wrapper>
     );
-  }, [context.emulator.command, context.gamePad.stickStates, context.gamePad.buttonStates, context.user.isSignedIn, context.user.uid, calcBarWidth, buttonChangeHandler, axisChangeHandler, onPush, onRelease, connectHandler, disconnectHandler]);
+  }, [
+    context.emulator.command,
+    context.gamePad.stickStates,
+    context.gamePad.buttonStates,
+    context.user.isSignedIn,
+    context.user.uid,
+    calcBarWidth,
+    buttonChangeHandler,
+    axisChangeHandler,
+    onPush,
+    onRelease,
+    connectHandler,
+    disconnectHandler,
+  ]);
 };
 
 const Wrapper = styled.div`
@@ -100,7 +111,7 @@ const StyledPreview = styled.div`
   height: auto;
   position: relative;
   height: 100%;
-`
+`;
 
 const Buttons = styled.ul`
   ${Layout.alignElements("inline-flex", "center", "center")};
@@ -126,7 +137,7 @@ const Sticks = styled.div`
   position: absolute;
   user-select: none;
   > div {
-    ${Layout.spacingBetweenElements("vertical", 1/2)};
+    ${Layout.spacingBetweenElements("vertical", 1 / 2)};
     ${Layout.alignElements("inline-flex", "flex-start", "center")};
     flex-direction: column;
     > span {
@@ -134,7 +145,7 @@ const Sticks = styled.div`
       display: inline-block;
     }
   }
-`
+`;
 
 const Bar = styled.div.attrs<{ length: number }>((props) => ({
   style: {
@@ -154,4 +165,4 @@ const StyledID = styled.span`
   right: 8px;
   color: ${Colors.elementColorMute};
   font-size: 9px;
-`
+`;

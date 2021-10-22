@@ -66,7 +66,7 @@ export const NavFolder = (props: NavFolderProps) => {
               {props._rightButtons &&
                 props._rightButtons.map((e) => (
                   <div className="right-icon fs-s" key={e.id}>
-                    <IconDropdownButton {...e} key={e.id} size="xxs"/>
+                    <IconDropdownButton {...e} key={e.id} size="xxs" />
                   </div>
                 ))}
             </InnerRight>
@@ -117,7 +117,7 @@ export const NavFolder = (props: NavFolderProps) => {
 const Wrapper = styled.li<{ _level: number }>`
   ${Layout.alignElements("inline-flex", "space-between", "center")};
   width: 100%;
-  padding: ${Layout.spacingVH(1/4, 1/2)};
+  padding: ${Layout.spacingVH(1 / 4, 1 / 2)};
   ${(props) =>
     props._level &&
     css`

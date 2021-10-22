@@ -27,7 +27,7 @@ export const NeutralGamepadProps = {
     20: 128,
     21: 128,
   },
-}
+};
 
 export const ContextInitial: ContextProps = {
   app: {

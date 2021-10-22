@@ -38,5 +38,5 @@ export const ProControllerButtonNames: { [key: number]: string } = {
   19: "L-Stick (Y)",
   20: "R-Stick (X)",
   21: "R-Stick (Y)",
-  99: "Void"
+  99: "Void",
 };

@@ -53,12 +53,17 @@ export const Project: React.FC<PageProps> = (props) => {
     } catch (error) {
       console.error(error);
     }
-  }, [context.user.isAdmin, fetchProject, props.match.params.id, search, setContext]);
+  }, [
+    context.user.isAdmin,
+    fetchProject,
+    props.match.params.id,
+    search,
+    setContext,
+  ]);
 
   React.useEffect(() => {
     init();
   }, [context.user.isAdmin, init]);
-
 
   return React.useMemo(() => {
     if (!context.app.isLoading) {
@@ -85,8 +90,15 @@ export const Project: React.FC<PageProps> = (props) => {
       } else return <></>;
     } else if (!context.app.isLoading && context.project.isLoaded) {
       return <Redirect to="/projects" />;
-    } else return <></>
-  }, [context.app.isLoading, context.project.data, context.project.id, context.project.imageUrl, context.project.isLoaded, context.project.name]);
+    } else return <></>;
+  }, [
+    context.app.isLoading,
+    context.project.data,
+    context.project.id,
+    context.project.imageUrl,
+    context.project.isLoaded,
+    context.project.name,
+  ]);
 };
 
 const StyledDiv = styled.div`

@@ -45,7 +45,7 @@ export const NavIndex = (props: NavIndexProps) => {
       <InnerRight className="right-icon">
         {props._rightButtons &&
           props._rightButtons.map((e, i) => (
-            <IconDropdownButton {...e} key={e.id} size="xxs"/>
+            <IconDropdownButton {...e} key={e.id} size="xxs" />
           ))}
       </InnerRight>
     </Wrapper>

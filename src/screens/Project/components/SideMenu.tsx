@@ -1,15 +1,11 @@
 import React from "react";
-
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-
 // Hooks
 import { useSideMenu } from "../hooks/useSideMenu";
-
 // Components
 import { MenuGroup } from "../../../ui/systems/Navigation/MenuGroup";
 import { LogoNav } from "./LogoNav";
 import { Button } from "../../../ui/parts/Button/Button";
-
 // Styles
 import styled from "styled-components";
 import * as Layout from "../../../styles/Layout";
@@ -90,7 +86,15 @@ export const SideMenu = (props: SideMenuProps) => {
         </div>
       </Wrapper>
     );
-  }, [addNewGroup, menu, onDragEnd, props.index.id, props.index.imageUrl, props.index.title, props.isEditable]);
+  }, [
+    addNewGroup,
+    menu,
+    onDragEnd,
+    props.index.id,
+    props.index.imageUrl,
+    props.index.title,
+    props.isEditable,
+  ]);
 };
 
 export default SideMenu;
@@ -122,7 +126,7 @@ const Wrapper = styled.nav`
 `;
 
 const StyledDroppableArea = styled.div<{ isDraggingOver: boolean }>`
-${Layout.spacingBetweenElements("vertical", 1)};
+  ${Layout.spacingBetweenElements("vertical", 1)};
   user-select: "none";
   background: ${(props) =>
     props.isDraggingOver ? Colors.bgColorLv2 : "transparent"};

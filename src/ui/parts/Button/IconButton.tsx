@@ -170,22 +170,35 @@ export const IconDropdownButton = (props: IconDropdownButtonProps) => {
     document.removeEventListener("click", handleClick);
   }, [handleClick]);
 
-  return (
-    <StyledWrapper ref={dropDownRef} isActive={isActive}>
-      <StyledDropdownButton
-        onClick={handleClick}
-        className={`${props.color} ${props.size} ${props.shape} material-icon ${
-          isActive ? "active" : "inactive"
-        }`}
-      >
-        {props.icon}
-      </StyledDropdownButton>
-      {isActive && (
-        <StyledDropdownWrapper {...rect} onClick={onClickOutside}>
-          <DropdownList {...props.dropdown} />
-        </StyledDropdownWrapper>
-      )}
-    </StyledWrapper>
+  return React.useMemo(
+    () => (
+      <StyledWrapper ref={dropDownRef} isActive={isActive}>
+        <StyledDropdownButton
+          onClick={handleClick}
+          className={`${props.color} ${props.size} ${
+            props.shape
+          } material-icon ${isActive ? "active" : "inactive"}`}
+        >
+          {props.icon}
+        </StyledDropdownButton>
+        {isActive && (
+          <StyledDropdownWrapper {...rect} onClick={onClickOutside}>
+            <DropdownList {...props.dropdown} />
+          </StyledDropdownWrapper>
+        )}
+      </StyledWrapper>
+    ),
+    [
+      handleClick,
+      isActive,
+      onClickOutside,
+      props.color,
+      props.dropdown,
+      props.icon,
+      props.shape,
+      props.size,
+      rect,
+    ]
   );
 };
 
