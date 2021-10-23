@@ -108,9 +108,8 @@ const Wrapper = styled.div`
 const StyledPreview = styled.div`
   display: grid;
   place-items: center;
-  height: auto;
   position: relative;
-  height: auto;
+  height: 100%;
 `;
 
 const Buttons = styled.ul`
