@@ -102,6 +102,7 @@ const InnerLeft = styled.div`
 const InnerRight = styled.div`
   ${Layout.alignElements("inline-flex", "center", "center")};
   ${Layout.spacingBetweenElements("horizontal", 0.5)};
+  padding-right: 4px;
   user-select: none;
   .right-icon {
     ${Layout.alignElements("flex", "center", "center")};
