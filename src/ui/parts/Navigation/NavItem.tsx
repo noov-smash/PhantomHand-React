@@ -62,14 +62,13 @@ export const NavItem = (props: NavItemProps) => {
 
 export default NavItem;
 
-const Wrapper = styled.li<NavItemProps>`
+const Wrapper = styled.li.attrs<NavItemProps>((props) => ({
+  style: {
+    paddingLeft: `${Layout.SpacingX(3 * props._level || 1)}`,
+  },
+}))<NavItemProps>`
   ${Layout.alignElements("flex", "space-between", "center")};
   padding: ${Layout.spacingVH(1 / 4, 1 / 2)};
-  ${(props) =>
-    props._level &&
-    css`
-      padding-left: ${Layout.SpacingX(3 * props._level)};
-    `};
   ${(props) =>
     props._state === "active" &&
     !props._isEditing &&
@@ -78,15 +77,6 @@ const Wrapper = styled.li<NavItemProps>`
       font-weight: ${FontWeight.bold};
       border-left: 4px solid ${Colors.brandColorPrimary};
       background: ${Colors.bgColorLv2};
-    `};
-  ${(props) =>
-    props._state === "inactive" &&
-    css`
-      opacity: 0.4;
-      &:hover {
-        cursor: default;
-        background: $bgColorLv1;
-      }
     `};
   &:hover {
     background: ${Colors.bgColorLv2};

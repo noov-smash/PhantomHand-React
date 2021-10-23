@@ -107,16 +107,24 @@ const StyledDiv = styled.div`
   }
 `;
 
-const StyledDraggableArea = styled.div<{ isDragging: boolean }>`
+const StyledDraggableArea = styled.div.attrs<{ isDragging: boolean }>(
+  (props) => ({
+    style: {
+      background: `${props.isDragging ? Colors.bgColorLv1 : "transparent"}`,
+      boxShadow: `${props.isDragging ? Effects.Shadow.float : "none"}`,
+    },
+  })
+)<{ isDragging: boolean }>`
   user-select: "none";
-  background: ${(props) =>
-    props.isDragging ? Colors.bgColorLv1 : "transparent"};
-  box-shadow: ${(props) => (props.isDragging ? Effects.Shadow.float : "none")};
 `;
 
-const StyledDroppableArea = styled.div<{ isDraggingOver: boolean }>`
+const StyledDroppableArea = styled.div.attrs<{ isDraggingOver: boolean }>(
+  (props) => ({
+    style: {
+      background: `${props.isDraggingOver ? Colors.bgColorLv2 : "transparent"}`,
+    },
+  })
+)<{ isDraggingOver: boolean }>`
   user-select: "none";
-  background: ${(props) =>
-    props.isDraggingOver ? Colors.bgColorLv2 : "transparent"};
   min-height: 4px;
 `;

@@ -24,11 +24,34 @@ export interface SideMenuProps {
 
 export const SideMenu = (props: SideMenuProps) => {
   const { menu, onDragEnd, addNewGroup } = useSideMenu(props);
+  const [width, setWidth] = React.useState<number>(256);
+  const [isResizing, setIsResizing] = React.useState<boolean>(false);
+
+  const onMouseMove = React.useCallback((e: MouseEvent) => {
+    setWidth(e.clientX);
+  }, []);
+
+  const onMouseUp = React.useCallback(() => {
+    document.removeEventListener("mousemove", onMouseMove);
+    document.removeEventListener("mouseup", onMouseUp);
+    setIsResizing(false);
+  }, [onMouseMove]);
+
+  const onMouseDown = React.useCallback(() => {
+    document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener("mousemove", onMouseMove);
+    setIsResizing(true);
+  }, [onMouseMove, onMouseUp]);
 
   return React.useMemo(() => {
     if (!menu) return <></>;
     return (
-      <Wrapper>
+      <Wrapper width={width}>
+        <StyledBorder
+          onMouseDown={onMouseDown}
+          onMouseUp={onMouseUp}
+          isResizing={isResizing}
+        />
         <div>
           <LogoNav
             id={props.index.id}
@@ -88,22 +111,29 @@ export const SideMenu = (props: SideMenuProps) => {
     );
   }, [
     addNewGroup,
+    isResizing,
     menu,
     onDragEnd,
+    onMouseDown,
+    onMouseUp,
     props.index.id,
     props.index.imageUrl,
     props.index.title,
     props.isEditable,
+    width,
   ]);
 };
 
 export default SideMenu;
 
-const Wrapper = styled.nav`
+const Wrapper = styled.nav.attrs<{ width: number }>((props) => ({
+  style: {
+    width: `${props.width}px`,
+  },
+}))<{ width: number }>`
   ${Layout.alignElements("flex", "space-between", "center")};
   ${Layout.spacingBetweenElements("vertical", 2)};
   flex-direction: column;
-  width: 256px;
   height: 100%;
   transition: 0.5s ease;
   overflow: hidden;
@@ -125,16 +155,43 @@ const Wrapper = styled.nav`
   }
 `;
 
-const StyledDroppableArea = styled.div<{ isDraggingOver: boolean }>`
+const StyledDroppableArea = styled.div.attrs<{ isDraggingOver: boolean }>(
+  (props) => ({
+    style: {
+      background: `${props.isDraggingOver ? Colors.bgColorLv2 : "transparent"}`,
+    },
+  })
+)<{ isDraggingOver: boolean }>`
   ${Layout.spacingBetweenElements("vertical", 1)};
   user-select: "none";
-  background: ${(props) =>
-    props.isDraggingOver ? Colors.bgColorLv2 : "transparent"};
 `;
 
-const StyledDraggableArea = styled.div<{ isDragging: boolean }>`
+const StyledDraggableArea = styled.div.attrs<{ isDragging: boolean }>(
+  (props) => ({
+    style: {
+      background: `${props.isDragging ? Colors.bgColorLv1 : "transparent"}`,
+      boxShadow: `${props.isDragging ? Effects.Shadow.float : "none"}`,
+    },
+  })
+)<{ isDragging: boolean }>`
   user-select: "none";
-  background: ${(props) =>
-    props.isDragging ? Colors.bgColorLv1 : "transparent"};
-  box-shadow: ${(props) => (props.isDragging ? Effects.Shadow.float : "none")};
+`;
+
+const StyledBorder = styled.div.attrs<{ isResizing: boolean }>((props) => ({
+  style: {
+    backgroundColor: `${
+      props.isResizing ? Colors.borderColorLv2 : "transparent"
+    }`,
+  },
+}))<{ isResizing: boolean }>`
+  position: absolute;
+  right: 0;
+  width: 4px;
+  height: 100%;
+  user-select: none;
+  z-index: 10;
+  &:hover {
+    background-color: ${Colors.borderColorLv2} !important;
+    cursor: col-resize;
+  }
 `;

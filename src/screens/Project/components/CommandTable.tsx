@@ -15,6 +15,8 @@ interface TheHeaderProps {
 export const CommandTable = (props: TheHeaderProps) => {
   const [context, setContext] = React.useContext(Context);
   const [flg, setFlg] = React.useState<boolean>(false);
+  const [top, setTop] = React.useState<number>(window.innerHeight - 100);
+  const [isResizing, setIsResizing] = React.useState<boolean>(false);
 
   const onChange = React.useCallback(
     (
@@ -94,9 +96,30 @@ export const CommandTable = (props: TheHeaderProps) => {
     [setContext]
   );
 
+  const onMouseMove = React.useCallback((e: MouseEvent) => {
+    setTop(e.clientY - 48);
+  }, []);
+
+  const onMouseUp = React.useCallback(() => {
+    document.removeEventListener("mousemove", onMouseMove);
+    document.removeEventListener("mouseup", onMouseUp);
+    setIsResizing(false);
+  }, [onMouseMove]);
+
+  const onMouseDown = React.useCallback(() => {
+    document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener("mousemove", onMouseMove);
+    setIsResizing(true);
+  }, [onMouseMove, onMouseUp]);
+
   return React.useMemo(() => {
     return (
-      <StyledWrapper>
+      <StyledWrapper top={top}>
+        <StyledBorder
+          onMouseDown={onMouseDown}
+          onMouseUp={onMouseUp}
+          isResizing={isResizing}
+        />
         <table>
           <thead>
             <tr>
@@ -193,15 +216,31 @@ export const CommandTable = (props: TheHeaderProps) => {
         {flg}
       </StyledWrapper>
     );
-  }, [addRow, context.emulator.command.signals, onChange, removeRow, flg]);
+  }, [
+    top,
+    onMouseDown,
+    onMouseUp,
+    isResizing,
+    context.emulator.command.signals,
+    flg,
+    onChange,
+    removeRow,
+    addRow,
+  ]);
 };
 
-const StyledWrapper = styled.section`
+const StyledWrapper = styled.section.attrs<{ top: number }>((props) => ({
+  style: {
+    height: `${window.innerHeight - props.top}px`,
+    // top: `${props.top}px`
+  },
+}))<{ top: number }>`
+  /* position: absolute; */
+  position: relative;
   min-width: 100%;
-  height: 200px;
   border-top: 1px solid ${Colors.borderColorLv1};
   overflow-y: scroll;
-  padding-bottom: 8px;
+  padding-bottom: 16px;
   background-color: ${Colors.bgColorLv0};
   table {
     width: 100%;
@@ -226,17 +265,17 @@ const StyledWrapper = styled.section`
     &.number {
       width: 10px;
     }
-    &.time{
-      width: calc((100% -10px) * .2);
+    &.time {
+      width: calc((100% -10px) * 0.2);
     }
     &.button {
-      width: calc((100% -10px) * .4);
+      width: calc((100% -10px) * 0.4);
     }
     &.value {
-      width: calc((100% -10px) * .3);
+      width: calc((100% -10px) * 0.3);
     }
     &.action {
-      width: calc((100% -10px) * .1);
+      width: calc((100% -10px) * 0.1);
     }
   }
   tr:first-child {
@@ -260,7 +299,7 @@ const StyledWrapper = styled.section`
     background-color: ${Colors.bgColorLv1};
     padding: ${Layout.spacingVH(1 / 4, 2)};
     min-width: 128px;
-    width: 100%;;
+    width: 100%;
   }
   select::-ms-expand {
     display: none;
@@ -283,5 +322,24 @@ const StyledSelect = styled.div`
     right: 9px;
     top: calc(50% - 2.5px);
     width: 0;
+  }
+`;
+
+const StyledBorder = styled.div.attrs<{ isResizing: boolean }>((props) => ({
+  style: {
+    backgroundColor: `${
+      props.isResizing ? Colors.borderColorLv1 : "transparent"
+    }`,
+  },
+}))<{ isResizing: boolean }>`
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 4px;
+  user-select: none;
+  z-index: 10;
+  &:hover {
+    background-color: ${Colors.borderColorLv2} !important;
+    cursor: row-resize;
   }
 `;

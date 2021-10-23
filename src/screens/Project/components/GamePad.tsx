@@ -110,7 +110,7 @@ const StyledPreview = styled.div`
   place-items: center;
   height: auto;
   position: relative;
-  height: 100%;
+  height: auto;
 `;
 
 const Buttons = styled.ul`
@@ -119,13 +119,15 @@ const Buttons = styled.ul`
   height: 32px;
   user-select: none;
   position: absolute;
-  bottom: 40px;
+  bottom: 20px;
   > li {
     ${Layout.centralizeInnerElement};
+    ${Layout.roundX(1)};
     height: 100%;
     padding: ${Layout.spacingVH(0, 2)};
     border: 1px solid ${Colors.borderColorLv1};
-    ${Layout.roundX(1)};
+    font-size: 14px;
+    background-color: ${Colors.bgColorLv0};
     /* color: ${Colors.elementColorWeak}; */
   }
 `;
@@ -133,7 +135,7 @@ const Buttons = styled.ul`
 const Sticks = styled.div`
   ${Layout.spacingBetweenElements("horizontal", 2)};
   color: ${Colors.elementColorWeak};
-  bottom: 90px;
+  top: 16px;
   position: absolute;
   user-select: none;
   > div {

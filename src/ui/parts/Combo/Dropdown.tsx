@@ -82,20 +82,20 @@ export const Dropdown = (props: DropdownProps) => {
 
 export default Dropdown;
 
-const StyledList = styled.li<{ state: DropdownProps["state"] }>`
+const StyledList = styled.li.attrs<{ state: DropdownProps["state"] }>(
+  (props) => ({
+    style: {
+      color: `${
+        props.state === "active"
+          ? Colors.Colors.brandColorPrimary
+          : Colors.Colors.elementColorWeak
+      }`,
+    },
+  })
+)<{ state: DropdownProps["state"] }>`
   ${Layout.alignElements("inline-flex", "space-between", "center")};
   ${Layout.spacingBetweenElements("horizontal", 0.5)};
   padding: ${Layout.spacingVH(0.5, 1)};
-  ${(props) =>
-    props.state === "active"
-      ? `color: ${Colors.Colors.brandColorPrimary}; * {
-      color: ${Colors.Colors.brandColorPrimary};
-    }`
-      : props.state === "inactive"
-      ? `color: ${Colors.Colors.elementColorWeak}; * {
-      color: ${Colors.Colors.elementColorWeak};
-    }`
-      : ``};
   &:hover {
     background: ${Colors.Colors.bgColorLv1};
     cursor: pointer;
@@ -122,7 +122,7 @@ const StyledList = styled.li<{ state: DropdownProps["state"] }>`
   }
   .right {
     ${Layout.alignElements("inline-flex", "center", "center")};
-    color: ${Colors.Colors.elementColorWeak};
+    /* color: ${Colors.Colors.elementColorWeak}; */
     &__icon {
       margin-left: ${Layout.SpacingX(1)};
     }

@@ -135,14 +135,15 @@ export const NintendoSwitchProCon = ({
   return React.useMemo(
     () => (
       <Svg
-        width="524"
-        height="450"
-        viewBox="0 0 1000 858"
+        width="512"
+        height="415"
+        viewBox="0 0 1024 830"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        xmlnsXlink="http://www.w3.org/1999/xlink"
+        version="1.1"
         {...props}
       >
-        <rect width="1000" height="858" fill="white" />
         {/* Left Grip */}
         <path
           d="M4.50003 710C7.00003 742 4 783.5 57.5 818.5C111 853.5 163.5 800 178.5 761.5C193.5 723 239.5 640 257 629.5C208.167 572.269 99.9 437.125 57.5 354.403C22.265 494.962 2.74123 687.487 4.50003 710Z"

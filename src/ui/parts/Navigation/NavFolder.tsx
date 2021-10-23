@@ -1,5 +1,5 @@
 import React from "react";
-import styled, { css } from "styled-components";
+import styled from "styled-components";
 import * as Layout from "../../../styles/Layout";
 import { Colors } from "../../../styles/Colors";
 import { IconSize } from "../../../styles/Fonts";
@@ -114,15 +114,14 @@ export const NavFolder = (props: NavFolderProps) => {
   );
 };
 
-const Wrapper = styled.li<{ _level: number }>`
+const Wrapper = styled.li.attrs<{ _level: number }>((props) => ({
+  style: {
+    paddingLeft: `${Layout.SpacingX(3 * props._level || 1)}`,
+  },
+}))<{ _level: number }>`
   ${Layout.alignElements("inline-flex", "space-between", "center")};
   width: 100%;
   padding: ${Layout.spacingVH(1 / 4, 1 / 2)};
-  ${(props) =>
-    props._level &&
-    css`
-      padding-left: ${Layout.SpacingX(3 * props._level)};
-    `};
   position: relative;
   &:hover {
     background: ${Colors.bgColorLv2};
@@ -163,15 +162,23 @@ const InnerRight = styled.div`
   }
 `;
 
-const StyledDraggableArea = styled.div<{ isDragging: boolean }>`
+const StyledDraggableArea = styled.div.attrs<{ isDragging: boolean }>(
+  (props) => ({
+    style: {
+      background: `${props.isDragging ? Colors.bgColorLv1 : "transparent"}`,
+      boxShadow: `${props.isDragging ? Effects.Shadow.float : "none"}`,
+    },
+  })
+)<{ isDragging: boolean }>`
   user-select: "none";
-  background: ${(props) =>
-    props.isDragging ? Colors.bgColorLv1 : "transparent"};
-  box-shadow: ${(props) => (props.isDragging ? Effects.Shadow.float : "none")};
 `;
 
-const StyledDroppableArea = styled.div<{ isDraggingOver: boolean }>`
+const StyledDroppableArea = styled.div.attrs<{ isDraggingOver: boolean }>(
+  (props) => ({
+    style: {
+      background: `${props.isDraggingOver ? Colors.bgColorLv2 : "transparent"}`,
+    },
+  })
+)<{ isDraggingOver: boolean }>`
   user-select: "none";
-  background: ${(props) =>
-    props.isDraggingOver ? Colors.bgColorLv2 : "transparent"};
 `;

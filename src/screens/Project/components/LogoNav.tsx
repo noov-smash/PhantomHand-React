@@ -51,6 +51,7 @@ const Wrapper = styled.div`
 
 const Left = styled(Link)`
   ${Layout.alignElements("inline-flex", "space-between", "center")};
+  width: calc(100% - 24px);
 `;
 
 const Thumbnail = styled.img`
@@ -62,7 +63,7 @@ const Thumbnail = styled.img`
 `;
 
 const Title = styled.h1`
-  width: 180px;
+  width: 100%;
   font-size: 14px;
   font-weight: bold;
   white-space: nowrap;

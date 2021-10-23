@@ -202,15 +202,14 @@ export const IconDropdownButton = (props: IconDropdownButtonProps) => {
   );
 };
 
-const StyledWrapper = styled.div<{ isActive: boolean }>`
+const StyledWrapper = styled.div.attrs<{ isActive: boolean }>((props) => ({
+  style: {
+    visibility: `${props.isActive ? "visible !important" : ""}`,
+  },
+}))<{ isActive: boolean }>`
   position: relative;
   display: grid;
   place-items: center;
-  ${(props) =>
-    props.isActive &&
-    `
-  visibility: visible !important;
-`};
 `;
 
 const StyledDropdownButton = styled.button`
@@ -256,10 +255,15 @@ const StyledDropdownButton = styled.button`
   }
 `;
 
-const StyledDropdownWrapper = styled.div<{ x: number; y: number }>`
+const StyledDropdownWrapper = styled.div.attrs<{ x: number; y: number }>(
+  (props) => ({
+    style: {
+      left: `${props.x}px`,
+      top: `${props.y}px`,
+    },
+  })
+)<{ x: number; y: number }>`
   position: fixed;
-  left: ${(props) => props.x}px;
-  top: ${(props) => props.y}px;
   z-index: 100;
   font-family: ${Fonts.FontFamily};
   display: inline-block;

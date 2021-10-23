@@ -148,7 +148,7 @@ export const useEmulator = () => {
         },
       },
     }));
-    intervalRef.current = setInterval(recInterval, 1000/60);
+    intervalRef.current = setInterval(recInterval, 1000 / 60);
   }, [recInterval, setContext]);
 
   const play = React.useCallback(
@@ -166,7 +166,7 @@ export const useEmulator = () => {
         },
       }));
       setBuffer(context.emulator.command.signals);
-      intervalRef.current = setInterval(playInterval, 1000/60);
+      intervalRef.current = setInterval(playInterval, 1000 / 60);
     },
     [context.emulator.command.signals, playInterval, setContext]
   );
