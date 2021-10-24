@@ -6,7 +6,6 @@ import { useEmulator } from "../../../hooks/useEmulator";
 import { useUsb } from "../../../hooks/useUsb";
 import { useBluetooth } from "../../../hooks/useBluetooth";
 // ui
-import { Button } from "../../../ui/parts/Button/Button";
 import {
   IconButton,
   IconDropdownButton,
@@ -22,7 +21,7 @@ export interface ProjectHeaderProps {}
 export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
   const [context] = React.useContext(Context);
   const { connectToUsbDevice, disconnectUsbDevice, findUsbDevices } = useUsb();
-  const { rec, stopRec, play, stopPlay, save, share } = useEmulator();
+  const { rec, stopRec, play, stopPlay } = useEmulator();
   const { connectToBluetoothDevice, disconnectBluetooth } = useBluetooth();
 
   React.useEffect(() => {
@@ -202,38 +201,6 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
               onClick={() => play(true)}
             />
           )}
-
-          {/* Save */}
-          {context.user.isSignedIn && (
-            <Button
-              {...{
-                size: "s",
-                color: "primary",
-                text: "Save",
-                leftIcon: context.user.isAdmin ? "cloud_upload" : "download",
-                icon: "left",
-              }}
-              isInactive={
-                context.emulator.state === "recording" ||
-                context.emulator.command.signals.length === 0
-              }
-              onClick={save}
-            />
-          )}
-          <Button
-            {...{
-              size: "s",
-              color: "outline",
-              text: "Share",
-              leftIcon: "share",
-              icon: "left",
-            }}
-            isInactive={
-              context.emulator.state === "recording" ||
-              context.emulator.command.signals.length === 0
-            }
-            onClick={share}
-          />
         </InnerRight>
       </Wrapper>
     ),
@@ -248,14 +215,10 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
       context.gamePad.isConnected,
       context.usb.device?.productName,
       context.usb.isConnected,
-      context.user.isAdmin,
-      context.user.isSignedIn,
       disconnectBluetooth,
       disconnectUsbDevice,
       play,
       rec,
-      save,
-      share,
       stopPlay,
       stopRec,
     ]

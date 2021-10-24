@@ -62,7 +62,10 @@ const StyledProjects = styled.div`
 const StyledProject = styled(Link)`
   ${Layout.alignElements("flex", "flex-start", "flex-start")};
   flex-direction: column;
-  width: calc(100vw / 4 - 24px);
+  width: calc((100% - 32px * 3) / 4);
+  &:nth-child(4n) {
+    margin-right: 0 !important;
+  }
 `;
 
 const StyledProjectImage = styled.div`

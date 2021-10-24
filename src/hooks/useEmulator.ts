@@ -153,10 +153,7 @@ export const useEmulator = () => {
 
   const play = React.useCallback(
     (repeat: boolean): void => {
-      console.log(
-        repeat ? "Repeat..." : "Play...",
-        context.emulator.command.signals
-      );
+      console.log(repeat ? "Repeat..." : "Play...");
       setContext((c: ContextProps) => ({
         ...c,
         emulator: {

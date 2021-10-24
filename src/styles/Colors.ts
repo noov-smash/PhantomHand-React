@@ -6,6 +6,7 @@ export const Colors = {
   brandColorSecondary: "#8f9295",
   brandColorTertiary: "#efefef",
   brandColorDestructive: "#fc4c80",
+  brandColorArduino: "#17A1A5",
   // status
   statusColorSuccess: "#5cc689",
   statusColorSuccessWeak: "#f2faf6",
@@ -52,6 +53,12 @@ export const setBgColors = () => css`
   &.destructive {
     color: ${Colors.elementColorInverse};
     background: ${Colors.brandColorDestructive};
+  }
+  &.arduino {
+    /* color: ${Colors.elementColorInverse};
+    background: ${Colors.brandColorArduino}; */
+    color: ${Colors.brandColorArduino};
+    border: 1px solid ${Colors.brandColorArduino};
   }
   &.outline {
     color: ${Colors.elementColorWeak};

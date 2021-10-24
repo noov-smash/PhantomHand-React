@@ -1,12 +1,18 @@
 import React from "react";
 import styled from "styled-components";
-import { CommandProps } from "../../../interfaces";
+import { CommandProps, SignalProps } from "../../../interfaces";
 import Colors from "../../../styles/Colors";
 import * as Layout from "../../../styles/Layout";
 // Hooks
 import { Context } from "../../../hooks/Provider";
+import { useEmulator } from "../../../hooks/useEmulator";
+// UI
+import { Button } from "../../../ui/parts/Button/Button";
 // Configs
-import { ProControllerButtonNames } from "../../../configs/controller";
+import {
+  ProControllerButtonNames,
+  SwitchControlLibrary,
+} from "../../../configs/controller";
 import { IconButton } from "../../../ui/parts/Button/IconButton";
 interface TheHeaderProps {
   signals: CommandProps["signals"];
@@ -17,6 +23,7 @@ export const CommandTable = (props: TheHeaderProps) => {
   const [flg, setFlg] = React.useState<boolean>(false);
   const [top, setTop] = React.useState<number>(window.innerHeight - 100);
   const [isResizing, setIsResizing] = React.useState<boolean>(false);
+  const { save, share } = useEmulator();
 
   const onChange = React.useCallback(
     (
@@ -112,6 +119,63 @@ export const CommandTable = (props: TheHeaderProps) => {
     setIsResizing(true);
   }, [onMouseMove, onMouseUp]);
 
+  const exportFile = React.useCallback(
+    (signals: SignalProps[]) => {
+      let prev18 = 128;
+      let prev19 = 128;
+      let prev20 = 128;
+      let prev21 = 128;
+      let code =
+        "#include <NintendoSwitchControlLibrary.h>\n\nvoid setup() {}\n\nvoid loop() {\n\n";
+      const title = context.emulator.command.title
+        .replace(" ", "")
+        .match(/^[A-Za-z0-9]*$/)
+        ? context.emulator.command.title
+        : Date.now();
+
+      signals.sort().forEach((c, i) => {
+        const prev = context.emulator.command.signals.sort()[i - 1];
+        if (c.s[0] === 18) prev18 = c.s[1];
+        if (c.s[0] === 19) prev19 = c.s[1];
+        if (c.s[0] === 20) prev20 = c.s[1];
+        if (c.s[0] === 21) prev21 = c.s[1];
+        code =
+          code + `  delay(${((c.t - (prev?.t || 0)) * 1000).toFixed(0)});\n`;
+        code =
+          code +
+          "  " +
+          (c.s[0] === 99
+            ? "\n"
+            : c.s[0] < 12 || (16 <= c.s[0] && c.s[0] <= 17)
+            ? `SwitchControlLibrary().${
+                c.s[1] === 1 ? "press" : "release"
+              }Button(Button::${SwitchControlLibrary[c.s[0]]});\n`
+            : 12 <= c.s[0] && c.s[0] <= 15
+            ? `SwitchControlLibrary().${
+                c.s[1] === 1 ? "press" : "release"
+              }HatButton(Hat::${SwitchControlLibrary[c.s[0]]});\n`
+            : c.s[0] === 18
+            ? `SwitchControlLibrary().moveLeftStick(${c.s[1]}, ${prev19});\n`
+            : c.s[0] === 19
+            ? `SwitchControlLibrary().moveLeftStick(${prev18}, ${c.s[1]});\n`
+            : c.s[0] === 20
+            ? `SwitchControlLibrary().moveLeftStick(${c.s[1]}, ${prev21});\n`
+            : c.s[0] === 21
+            ? `SwitchControlLibrary().moveLeftStick(${prev20}, ${c.s[1]});\n`
+            : "");
+        code = code + "  SwitchControlLibrary().sendReport();\n";
+      });
+      code = code + "}\n\n";
+
+      const blob = new Blob([code], { type: "text/plain" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `PhantomHand-${title}.ino`;
+      link.click();
+    },
+    [context.emulator.command.signals, context.emulator.command.title]
+  );
+
   return React.useMemo(() => {
     return (
       <StyledWrapper top={top}>
@@ -120,6 +184,56 @@ export const CommandTable = (props: TheHeaderProps) => {
           onMouseUp={onMouseUp}
           isResizing={isResizing}
         />
+        <StyledHeader>
+          <div className="left">
+            <span className="title fs-l fw-bold">Command Editor</span>
+          </div>
+          <div className="right">
+            <Button
+              {...{
+                size: "xs",
+                color: "primary",
+                text: "Save",
+                leftIcon: "save",
+                icon: "left",
+              }}
+              isInactive={
+                context.emulator.state === "recording" ||
+                context.emulator.command.signals.length === 0
+              }
+              onClick={save}
+            />
+            <Button
+              {...{
+                size: "xs",
+                color: "arduino",
+                text: "Arduino",
+                leftIcon: "get_app",
+                icon: "left",
+              }}
+              isInactive={
+                context.emulator.state === "recording" ||
+                context.emulator.command.signals.length === 0
+              }
+              onClick={() => exportFile(context.emulator.command.signals)}
+            />
+            <Button
+              {...{
+                size: "xs",
+                color: "outline",
+                text: "Share",
+                leftIcon: "share",
+                icon: "left",
+              }}
+              isInactive={
+                context.emulator.state === "recording" ||
+                context.emulator.command.signals.length === 0
+              }
+              onClick={share}
+            />
+          </div>
+        </StyledHeader>
+
         <table>
           <thead>
             <tr>
@@ -127,11 +241,17 @@ export const CommandTable = (props: TheHeaderProps) => {
               <th className="time grow">Time (sec)</th>
               <th className="button grow">Button</th>
               <th className="value grow">Value</th>
-              <th className="action"></th>
+              <th className="action">
+                <span
+                  onClick={() => exportFile(context.emulator.command.signals)}
+                >
+                  Export
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody>
-            {context.emulator.command.signals.map((c, i) => (
+            {context.emulator.command.signals.sort().map((c, i) => (
               <tr key={i}>
                 <td>{i + 1}</td>
                 <td>
@@ -221,8 +341,12 @@ export const CommandTable = (props: TheHeaderProps) => {
     onMouseDown,
     onMouseUp,
     isResizing,
+    context.emulator.state,
     context.emulator.command.signals,
+    save,
+    share,
     flg,
+    exportFile,
     onChange,
     removeRow,
     addRow,
@@ -238,6 +362,7 @@ const StyledWrapper = styled.section.attrs<{ top: number }>((props) => ({
   /* position: absolute; */
   position: relative;
   min-width: 100%;
+  min-height: 128px;
   border-top: 1px solid ${Colors.borderColorLv1};
   overflow-y: scroll;
   padding-bottom: 16px;
@@ -308,6 +433,19 @@ const StyledWrapper = styled.section.attrs<{ top: number }>((props) => ({
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
+  }
+`;
+
+const StyledHeader = styled.div`
+  ${Layout.alignElements("flex", "space-between", "center")};
+  padding: ${Layout.spacingVH(1 / 2, 1)};
+  .left,
+  .right {
+    ${Layout.alignElements("flex", "space-between", "center")};
+    ${Layout.spacingBetweenElements("horizontal", 1)};
+  }
+  .title {
+    font-weight: 600;
   }
 `;
 

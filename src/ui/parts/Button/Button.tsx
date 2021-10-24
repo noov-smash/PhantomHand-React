@@ -11,9 +11,10 @@ export interface ButtonProps {
     | "destructive"
     | "ghost"
     | "outline"
-    | "transparent";
+    | "transparent"
+    | "arduino";
   icon: "none" | "left" | "right" | "both";
-  size: "s" | "m" | "l";
+  size: "xs" | "s" | "m" | "l";
   width?: number;
   leftIcon?: string;
   rightIcon?: string;
@@ -82,6 +83,7 @@ const Btn = styled.button<BtnProps>`
     color: ${Colors.Colors.elementColorInverse};
     background: ${Colors.Colors.brandColorSecondary};
     opacity: 0.4;
+    border: none;
     &:hover {
       cursor: default;
       opacity: 0.4;

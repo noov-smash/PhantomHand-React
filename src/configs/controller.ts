@@ -40,3 +40,27 @@ export const ProControllerButtonNames: { [key: number]: string } = {
   21: "R-Stick (Y)",
   99: "Void",
 };
+
+export const SwitchControlLibrary: { [key: number]: string } = {
+  0: "B",
+  1: "A",
+  2: "Y",
+  3: "X",
+  4: "L",
+  5: "R",
+  6: "ZL",
+  7: "ZR",
+  8: "MINUS",
+  9: "PLUS",
+  12: "UP",
+  13: "DOWN",
+  14: "LEFT",
+  15: "RIGHT",
+  16: "HOME",
+  17: "CAPTURE",
+  18: "L-Stick (X)",
+  19: "L-Stick (Y)",
+  20: "R-Stick (X)",
+  21: "R-Stick (Y)",
+  99: "Void",
+};
