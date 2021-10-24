@@ -225,22 +225,50 @@ export const useSideMenu = (props: SideMenuProps) => {
           ...group.folders[action.folderIndex],
           ...saveNameProps,
         };
-      else if (action.type === "item" && group.items)
+      else if (action.type === "item" && group.items) {
         group.items[action.itemIndex] = {
           ...group.items[action.itemIndex],
           ...saveNameProps,
         };
+        if (group.items[action.itemIndex]._state === 'active') {
+          const title = group.items[action.itemIndex].title
+          setContext((c) => ({
+            ...c,
+            emulator: {
+              ...c.emulator,
+              command: {
+                ...c.emulator.command,
+                title: title,
+              },
+            }
+          }));
+        }
+      }
       else if (action.type === "folderItem" && group.folders) {
         const folder = group.folders[action.folderIndex];
-        if (folder.items)
+        if (folder.items){
           folder.items[action.itemIndex] = {
             ...folder.items[action.itemIndex],
             ...saveNameProps,
           };
+          if (folder.items[action.itemIndex]._state === 'active') {
+            const title = folder.items[action.itemIndex].title
+            setContext((c) => ({
+              ...c,
+              emulator: {
+                ...c.emulator,
+                command: {
+                  ...c.emulator.command,
+                  title: title,
+                },
+              }
+            }));
+          }
+        }
       }
       save(newMenu);
     },
-    [indexRightButtons, save]
+    [indexRightButtons, save, setContext]
   );
 
   const rename = React.useCallback(
