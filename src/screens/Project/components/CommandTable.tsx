@@ -242,11 +242,6 @@ export const CommandTable = (props: TheHeaderProps) => {
               <th className="button grow">Button</th>
               <th className="value grow">Value</th>
               <th className="action">
-                <span
-                  onClick={() => exportFile(context.emulator.command.signals)}
-                >
-                  Export
-                </span>
               </th>
             </tr>
           </thead>
