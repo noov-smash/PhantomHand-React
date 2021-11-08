@@ -1,3 +1,4 @@
+// For Logic
 export const ProControllerConfig: { [key: string]: number } = {
   A: 0,
   B: 1,
@@ -7,6 +8,10 @@ export const ProControllerConfig: { [key: string]: number } = {
   RB: 5,
   LT: 6,
   RT: 7,
+  Back: 8,
+  Start: 9,
+  LS: 10,
+  RS: 11,
   DPadUp: 12,
   DPadDown: 13,
   DPadLeft: 14,
@@ -17,6 +22,7 @@ export const ProControllerConfig: { [key: string]: number } = {
   RightStickY: 21,
 };
 
+// For Display
 export const ProControllerButtonNames: { [key: number]: string } = {
   0: "B",
   1: "A",
@@ -28,6 +34,8 @@ export const ProControllerButtonNames: { [key: number]: string } = {
   7: "ZR",
   8: "-",
   9: "+",
+  10: "L-Stick",
+  11: "R-Stick",
   12: "↑",
   13: "↓",
   14: "←",
@@ -41,6 +49,7 @@ export const ProControllerButtonNames: { [key: number]: string } = {
   99: "Void",
 };
 
+// For Arduino
 export const SwitchControlLibrary: { [key: number]: string } = {
   0: "B",
   1: "A",
@@ -52,6 +61,8 @@ export const SwitchControlLibrary: { [key: number]: string } = {
   7: "ZR",
   8: "MINUS",
   9: "PLUS",
+  10: "LCLICK",
+  11: "RCLICK",
   12: "UP",
   13: "DOWN",
   14: "LEFT",

@@ -184,7 +184,8 @@ export const NintendoSwitchProCon = ({
             context.gamePad.stickStates[18] >= 159 ||
             context.gamePad.stickStates[18] <= 95 ||
             context.gamePad.stickStates[19] >= 159 ||
-            context.gamePad.stickStates[19] <= 95
+            context.gamePad.stickStates[19] <= 95 ||
+            context.gamePad.buttonStates[10]
               ? activeColor
               : inactiveColor
           }
@@ -208,7 +209,8 @@ export const NintendoSwitchProCon = ({
             context.gamePad.stickStates[20] >= 159 ||
             context.gamePad.stickStates[20] <= 95 ||
             context.gamePad.stickStates[21] >= 159 ||
-            context.gamePad.stickStates[21] <= 95
+            context.gamePad.stickStates[21] <= 95 ||
+            context.gamePad.buttonStates[11]
               ? activeColor
               : inactiveColor
           }
