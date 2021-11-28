@@ -22,6 +22,7 @@ export interface IconButtonProps {
   size: "xxs" | "xs" | "s" | "m" | "l" | string;
   icon: string;
   isInactive?: boolean;
+  tooltip?: string;
   onClick?: () => void;
 }
 
@@ -31,6 +32,7 @@ export const IconButton = (props: IconButtonProps) => {
     <>
       {!props.isInactive ? (
         <StyledButton
+          data-tip={props.tooltip}
           className={`${props.color} ${props.size} ${props.shape} material-icon`}
           onClick={onClickFunc}
         >
@@ -38,6 +40,7 @@ export const IconButton = (props: IconButtonProps) => {
         </StyledButton>
       ) : (
         <StyledButton
+          data-tip={props.tooltip}
           className={`${props.color} ${props.size} ${props.shape} inactive material-icon`}
         >
           {props.icon}
@@ -125,6 +128,7 @@ export interface IconDropdownButtonProps {
   icon: string;
   dropdown: DropdownListProps;
   positionY?: "top" | "bottom";
+  tooltip?: string;
 }
 
 export const IconDropdownButton = (props: IconDropdownButtonProps) => {
@@ -174,6 +178,7 @@ export const IconDropdownButton = (props: IconDropdownButtonProps) => {
     () => (
       <StyledWrapper ref={dropDownRef} isActive={isActive}>
         <StyledDropdownButton
+          data-tip={props.tooltip}
           onClick={handleClick}
           className={`${props.color} ${props.size} ${
             props.shape
@@ -197,6 +202,7 @@ export const IconDropdownButton = (props: IconDropdownButtonProps) => {
       props.icon,
       props.shape,
       props.size,
+      props.tooltip,
       rect,
     ]
   );

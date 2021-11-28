@@ -47,18 +47,23 @@ export const useEmulator = () => {
     neutral();
   }, [neutral, setContext]);
 
-  const stopPlay = React.useCallback((): void => {
-    console.log("Stop...");
-    setContext((c: ContextProps) => ({
-      ...c,
-      emulator: { ...c.emulator, state: "standby", time: 0 },
-    }));
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    neutral();
-  }, [neutral, setContext]);
+  const stopPlay = React.useCallback(
+    (reset?: boolean): void => {
+      console.log("Stop...");
+      setContext((c: ContextProps) => ({
+        ...c,
+        emulator: reset
+          ? { ...c.emulator, state: "standby", time: 0 }
+          : { ...c.emulator, state: "standby" },
+      }));
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      neutral();
+    },
+    [neutral, setContext]
+  );
 
   const stopAll = React.useCallback((): void => {
     if (
@@ -107,7 +112,7 @@ export const useEmulator = () => {
 
       // If it over record time, stop timer
       if (isTimeOver(time)) {
-        if (c.emulator.state === "playing") stopPlay();
+        if (c.emulator.state === "playing") stopPlay(true);
         else if (c.emulator.state === "repeating") {
           setBuffer(context.emulator.command.signals);
           return {
@@ -116,7 +121,6 @@ export const useEmulator = () => {
           };
         }
       }
-
       return {
         ...c,
         emulator: {

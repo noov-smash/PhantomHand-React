@@ -135,8 +135,7 @@ export const NintendoSwitchProCon = ({
   return React.useMemo(
     () => (
       <Svg
-        width="512"
-        height="415"
+        width="100%"
         viewBox="0 0 1024 830"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"

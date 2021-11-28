@@ -36,6 +36,7 @@ LogoNav.defaultProps = {
     size: "xs",
     color: "ghost",
     icon: "apps",
+    tooltip: "Apps",
   },
   imageUrl: "",
   title: "",

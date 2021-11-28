@@ -230,8 +230,8 @@ export const useSideMenu = (props: SideMenuProps) => {
           ...group.items[action.itemIndex],
           ...saveNameProps,
         };
-        if (group.items[action.itemIndex]._state === 'active') {
-          const title = group.items[action.itemIndex].title
+        if (group.items[action.itemIndex]._state === "active") {
+          const title = group.items[action.itemIndex].title;
           setContext((c) => ({
             ...c,
             emulator: {
@@ -240,19 +240,18 @@ export const useSideMenu = (props: SideMenuProps) => {
                 ...c.emulator.command,
                 title: title,
               },
-            }
+            },
           }));
         }
-      }
-      else if (action.type === "folderItem" && group.folders) {
+      } else if (action.type === "folderItem" && group.folders) {
         const folder = group.folders[action.folderIndex];
-        if (folder.items){
+        if (folder.items) {
           folder.items[action.itemIndex] = {
             ...folder.items[action.itemIndex],
             ...saveNameProps,
           };
-          if (folder.items[action.itemIndex]._state === 'active') {
-            const title = folder.items[action.itemIndex].title
+          if (folder.items[action.itemIndex]._state === "active") {
+            const title = folder.items[action.itemIndex].title;
             setContext((c) => ({
               ...c,
               emulator: {
@@ -261,7 +260,7 @@ export const useSideMenu = (props: SideMenuProps) => {
                   ...c.emulator.command,
                   title: title,
                 },
-              }
+              },
             }));
           }
         }

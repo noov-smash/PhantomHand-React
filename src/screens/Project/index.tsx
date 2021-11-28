@@ -1,4 +1,5 @@
 import React from "react";
+import ReactTooltip from "react-tooltip";
 import { RouteComponentProps, Redirect, useLocation } from "react-router-dom";
 import queryString from "query-string";
 import rison from "rison";
@@ -9,7 +10,7 @@ import { SignalProps } from "../../interfaces";
 // Components
 import { SideMenu } from "./components/SideMenu";
 import { ProjectHeader } from "./components/ProjectHeader";
-import { GamePad } from "./components/GamePad";
+import { Viewer } from "./components/Viewer";
 // Styles
 import styled from "styled-components";
 
@@ -82,9 +83,10 @@ export const Project: React.FC<PageProps> = (props) => {
             <StyledMain>
               <ProjectHeader />
               <StyledSection>
-                <GamePad />
+                <Viewer />
               </StyledSection>
             </StyledMain>
+            <ReactTooltip effect="solid" />
           </StyledDiv>
         );
       } else return <></>;

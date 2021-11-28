@@ -9,7 +9,6 @@ import * as Layout from "../../../styles/Layout";
 import { Colors } from "../../../styles/Colors";
 // Components
 import { NintendoSwitchProCon } from "./NintendoSwitchProCon";
-import { CommandTable } from "./CommandTable";
 // import { NoConnection } from "../ui/parts/GamePad/NoConnection";
 // Configs
 import { ProControllerButtonNames } from "../../../configs/controller";
@@ -25,19 +24,36 @@ export const GamePad: React.FC = () => {
     onRelease,
   } = useGamePad();
 
-  const calcBarWidth = React.useCallback(() => {
-    const max = context.emulator.command.signals.slice(-1)[0];
-    return 100 - (context.emulator.time / max.t) * 100;
-  }, [context.emulator.command.signals, context.emulator.time]);
-
   return React.useMemo(() => {
     return (
-      <Wrapper>
-        {context.emulator.command &&
-          context.emulator.command.signals.length > 0 && (
-            <Bar length={calcBarWidth()} />
+      <GamePadPreview>
+        <NintendoSwitchProCon
+          onPush={onPush}
+          onRelease={onRelease}
+          onTilt={axisChangeHandler}
+        />
+        <Buttons>
+          {Object.keys(context.gamePad.buttonStates).map(
+            (button: any) =>
+              button < 18 &&
+              context.gamePad.buttonStates[button] && (
+                <li className="fs-xl fw-bold" key={button}>
+                  {ProControllerButtonNames[button]}
+                </li>
+              )
           )}
-
+        </Buttons>
+        <Sticks>
+          <div>
+            <span>X: {context.gamePad.stickStates[18]}</span>
+            <span>Y: {context.gamePad.stickStates[19]}</span>
+          </div>
+          <div>
+            <span>X: {context.gamePad.stickStates[20]}</span>
+            <span>Y: {context.gamePad.stickStates[21]}</span>
+          </div>
+        </Sticks>
+        <StyledID>{context.user.isSignedIn && context.user.uid}</StyledID>
         <Gamepad
           gamepadIndex={0}
           onConnect={(gamepadIndex) => connectHandler(gamepadIndex)}
@@ -47,69 +63,30 @@ export const GamePad: React.FC = () => {
         >
           <React.Fragment />
         </Gamepad>
-
-        <StyledPreview>
-          <NintendoSwitchProCon
-            onPush={onPush}
-            onRelease={onRelease}
-            onTilt={axisChangeHandler}
-          />
-          <Buttons>
-            {Object.keys(context.gamePad.buttonStates).map(
-              (button: any) =>
-                button < 18 &&
-                context.gamePad.buttonStates[button] && (
-                  <li className="fs-xl fw-bold" key={button}>
-                    {ProControllerButtonNames[button]}
-                  </li>
-                )
-            )}
-          </Buttons>
-          <Sticks>
-            <div>
-              <span>X: {context.gamePad.stickStates[18]}</span>
-              <span>Y: {context.gamePad.stickStates[19]}</span>
-            </div>
-            <div>
-              <span>X: {context.gamePad.stickStates[20]}</span>
-              <span>Y: {context.gamePad.stickStates[21]}</span>
-            </div>
-          </Sticks>
-          <StyledID>{context.user.isSignedIn && context.user.uid}</StyledID>
-        </StyledPreview>
-
-        <CommandTable signals={context.emulator.command.signals} />
-      </Wrapper>
+      </GamePadPreview>
     );
   }, [
-    context.emulator.command,
-    context.gamePad.stickStates,
     context.gamePad.buttonStates,
+    context.gamePad.stickStates,
     context.user.isSignedIn,
     context.user.uid,
-    calcBarWidth,
-    buttonChangeHandler,
-    axisChangeHandler,
     onPush,
     onRelease,
+    axisChangeHandler,
+    buttonChangeHandler,
     connectHandler,
     disconnectHandler,
   ]);
 };
 
-const Wrapper = styled.div`
-  ${Layout.alignElements("inline-flex", "space-between", "space-between")};
-  flex-direction: column;
-  position: relative;
-  width: 100%;
-  height: 100%;
-`;
-
-const StyledPreview = styled.div`
+const GamePadPreview = styled.div`
   display: grid;
   place-items: center;
   position: relative;
+  min-width: 25%;
   height: 100%;
+  padding: 0 8px;
+  margin: 0 auto;
 `;
 
 const Buttons = styled.ul`
@@ -125,7 +102,7 @@ const Buttons = styled.ul`
     height: 100%;
     padding: ${Layout.spacingVH(0, 2)};
     border: 1px solid ${Colors.borderColorLv1};
-    font-size: 14px;
+    font-size: 12px;
     background-color: ${Colors.bgColorLv0};
     /* color: ${Colors.elementColorWeak}; */
   }
@@ -144,20 +121,9 @@ const Sticks = styled.div`
     > span {
       width: 48px;
       display: inline-block;
+      font-size: 12px;
     }
   }
-`;
-
-const Bar = styled.div.attrs<{ length: number }>((props) => ({
-  style: {
-    width: `${props.length}%`,
-  },
-}))<{ length: number }>`
-  position: absolute;
-  top: 0;
-  right: 0;
-  height: 2px;
-  background-color: ${Colors.brandColorPrimary};
 `;
 
 const StyledID = styled.span`

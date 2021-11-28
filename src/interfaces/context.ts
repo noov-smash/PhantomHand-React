@@ -34,6 +34,17 @@ export interface ContextProps {
         characteristic: BluetoothRemoteGATTCharacteristic;
         device: BluetoothDevice;
       };
+  media:
+    | {
+        isConnected: false;
+        devices?: MediaDeviceInfo[];
+        stream?: MediaStream;
+      }
+    | {
+        isConnected: true;
+        devices?: MediaDeviceInfo[];
+        stream: MediaStream;
+      };
   emulator: {
     state: "standby" | "recording" | "playing" | "repeating";
     time: number;

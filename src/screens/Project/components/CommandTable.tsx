@@ -21,9 +21,14 @@ interface TheHeaderProps {
 export const CommandTable = (props: TheHeaderProps) => {
   const [context, setContext] = React.useContext(Context);
   const [flg, setFlg] = React.useState<boolean>(false);
-  const [top, setTop] = React.useState<number>(window.innerHeight - 100);
+  const [top, setTop] = React.useState<number>(0);
   const [isResizing, setIsResizing] = React.useState<boolean>(false);
   const { save, share } = useEmulator();
+
+  const calcBarWidth = React.useCallback(() => {
+    const max = context.emulator.command.signals.slice(-1)[0];
+    return 100 - (context.emulator.time / max.t) * 100;
+  }, [context.emulator.command.signals, context.emulator.time]);
 
   const onChange = React.useCallback(
     (
@@ -179,6 +184,10 @@ export const CommandTable = (props: TheHeaderProps) => {
   return React.useMemo(() => {
     return (
       <StyledWrapper top={top}>
+        {context.emulator.command &&
+          context.emulator.command.signals.length > 0 && (
+            <Bar length={calcBarWidth()} />
+          )}
         <StyledBorder
           onMouseDown={onMouseDown}
           onMouseUp={onMouseUp}
@@ -186,7 +195,7 @@ export const CommandTable = (props: TheHeaderProps) => {
         />
         <StyledHeader>
           <div className="left">
-            <span className="title fs-l fw-bold">Command Editor</span>
+            <span className="title fs-l fw-bold">Editor</span>
           </div>
           <div className="right">
             <Button
@@ -241,13 +250,19 @@ export const CommandTable = (props: TheHeaderProps) => {
               <th className="time grow">Time (sec)</th>
               <th className="button grow">Button</th>
               <th className="value grow">Value</th>
-              <th className="action">
-              </th>
+              <th className="action"></th>
             </tr>
           </thead>
           <tbody>
             {context.emulator.command.signals.sort().map((c, i) => (
-              <tr key={i}>
+              <tr
+                key={i}
+                className={
+                  Number(context.emulator.time.toFixed(2)) >= c.t
+                    ? "inactive"
+                    : "active"
+                }
+              >
                 <td>{i + 1}</td>
                 <td>
                   <input
@@ -333,11 +348,13 @@ export const CommandTable = (props: TheHeaderProps) => {
     );
   }, [
     top,
+    context.emulator.command,
+    context.emulator.state,
+    context.emulator.time,
+    calcBarWidth,
     onMouseDown,
     onMouseUp,
     isResizing,
-    context.emulator.state,
-    context.emulator.command.signals,
     save,
     share,
     flg,
@@ -356,7 +373,8 @@ const StyledWrapper = styled.section.attrs<{ top: number }>((props) => ({
 }))<{ top: number }>`
   /* position: absolute; */
   position: relative;
-  min-width: 100%;
+  width: 100%;
+  /* min-width: 100%; */
   min-height: 128px;
   border-top: 1px solid ${Colors.borderColorLv1};
   overflow-y: scroll;
@@ -398,9 +416,14 @@ const StyledWrapper = styled.section.attrs<{ top: number }>((props) => ({
       width: calc((100% -10px) * 0.1);
     }
   }
-  tr:first-child {
-    td {
-      padding-top: 8px;
+  tr {
+    &.inactive {
+      opacity: 0.6;
+    }
+    &:first-child {
+      td {
+        padding-top: 8px;
+      }
     }
   }
   td {
@@ -465,14 +488,30 @@ const StyledBorder = styled.div.attrs<{ isResizing: boolean }>((props) => ({
     }`,
   },
 }))<{ isResizing: boolean }>`
-  position: absolute;
-  top: 0;
+  /* position: absolute; */
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0px;
   width: 100%;
   height: 4px;
   user-select: none;
-  z-index: 10;
+  z-index: 101;
   &:hover {
     background-color: ${Colors.borderColorLv2} !important;
     cursor: row-resize;
   }
+`;
+
+const Bar = styled.div.attrs<{ length: number }>((props) => ({
+  style: {
+    width: `${props.length}%`,
+  },
+}))<{ length: number }>`
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  right: 0;
+  height: 3px;
+  background-color: ${Colors.brandColorPrimary};
+  z-index: 100;
 `;

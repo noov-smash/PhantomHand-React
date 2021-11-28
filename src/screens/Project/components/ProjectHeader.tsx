@@ -5,6 +5,7 @@ import { Context } from "../../../hooks/Provider";
 import { useEmulator } from "../../../hooks/useEmulator";
 import { useUsb } from "../../../hooks/useUsb";
 import { useBluetooth } from "../../../hooks/useBluetooth";
+import { useMedia } from "../../../hooks/useMedia";
 // ui
 import {
   IconButton,
@@ -23,18 +24,23 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
   const { connectToUsbDevice, disconnectUsbDevice, findUsbDevices } = useUsb();
   const { rec, stopRec, play, stopPlay } = useEmulator();
   const { connectToBluetoothDevice, disconnectBluetooth } = useBluetooth();
+  const { getMediaDevices, connectToUserMedia } = useMedia();
 
   React.useEffect(() => {
+    getMediaDevices();
     findUsbDevices();
-  }, [findUsbDevices]);
+  }, [findUsbDevices, getMediaDevices]);
 
   return React.useMemo(
     () => (
       <Wrapper>
-        {/*----- Left -----*/}
         <InnerLeft>
           {/* Controller*/}
-          <Device>
+          <Device
+            data-tip={`Physical Controller: ${
+              context.gamePad.isConnected ? "ON" : "OFF"
+            }`}
+          >
             {context.gamePad.isConnected ? (
               <>
                 <span className="material-icon fs-xs on">wifi</span>
@@ -47,6 +53,7 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
 
           {/* USB */}
           <IconDropdownButton
+            tooltip="USB Device"
             id={uid()}
             color={context.usb.isConnected ? "outlinePrimary" : "outline"}
             shape="square"
@@ -77,6 +84,7 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
 
           {/* Bluetooth */}
           <IconDropdownButton
+            tooltip="Bluetooth Device"
             id={uid()}
             color={context.bluetooth.isConnected ? "outlinePrimary" : "outline"}
             shape="square"
@@ -108,6 +116,33 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
                   ]
             }
           />
+
+          {/* Media */}
+          <IconDropdownButton
+            tooltip="Capture Device"
+            id={uid()}
+            color={context.media.isConnected ? "outlinePrimary" : "outline"}
+            shape="square"
+            size="s"
+            icon={context.bluetooth.isConnected ? "airplay" : "airplay"}
+            positionY="bottom"
+            dropdown={
+              context.media.devices
+                ? context.media.devices.map((d) => ({
+                    state: "default",
+                    leftText: d.label,
+                    leftIcon: "videocam",
+                    onClick: () => connectToUserMedia(d.deviceId),
+                  }))
+                : [
+                    {
+                      state: "inactive",
+                      leftText: "Not Found",
+                      leftIcon: "videocam_off",
+                    },
+                  ]
+            }
+          />
         </InnerLeft>
 
         {/*----- Right -----*/}
@@ -125,6 +160,7 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
                 color: "orange",
                 size: "s",
                 shape: "square",
+                tooltip: "Stop",
               }}
               onClick={stopRec}
             />
@@ -135,6 +171,7 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
                 color: "red",
                 size: "s",
                 shape: "square",
+                tooltip: "Rec",
               }}
               onClick={rec}
               isInactive={
@@ -152,6 +189,7 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
                 color: "orange",
                 size: "s",
                 shape: "square",
+                tooltip: "Stop",
               }}
               isInactive={context.emulator.command.signals.length === 0}
               onClick={stopPlay}
@@ -163,6 +201,7 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
                 color: "blue",
                 size: "s",
                 shape: "square",
+                tooltip: "Play",
               }}
               isInactive={
                 context.emulator.state === "recording" ||
@@ -181,6 +220,7 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
                 color: "orange",
                 size: "s",
                 shape: "square",
+                tooltip: "Stop",
               }}
               isInactive={context.emulator.command.signals.length === 0}
               onClick={stopPlay}
@@ -192,6 +232,7 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
                 color: "green",
                 size: "s",
                 shape: "square",
+                tooltip: "Repeat",
               }}
               isInactive={
                 context.emulator.state === "recording" ||
@@ -205,22 +246,25 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
       </Wrapper>
     ),
     [
-      connectToBluetoothDevice,
-      connectToUsbDevice,
-      context.bluetooth.device?.name,
-      context.bluetooth.isConnected,
-      context.emulator.command.signals.length,
-      context.emulator.state,
-      context.emulator.time,
       context.gamePad.isConnected,
-      context.usb.device?.productName,
       context.usb.isConnected,
-      disconnectBluetooth,
+      context.usb.device?.productName,
+      context.bluetooth.isConnected,
+      context.bluetooth.device?.name,
+      context.media.devices,
+      context.media.isConnected,
+      context.emulator.time,
+      context.emulator.state,
+      context.emulator.command.signals.length,
       disconnectUsbDevice,
-      play,
+      connectToUsbDevice,
+      disconnectBluetooth,
+      connectToBluetoothDevice,
+      stopRec,
       rec,
       stopPlay,
-      stopRec,
+      connectToUserMedia,
+      play,
     ]
   );
 };

@@ -48,6 +48,9 @@ export const ContextInitial: ContextProps = {
   bluetooth: {
     isConnected: false,
   },
+  media: {
+    isConnected: false,
+  },
   emulator: {
     state: "standby",
     time: 0,
