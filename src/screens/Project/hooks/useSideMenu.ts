@@ -57,7 +57,7 @@ export const useSideMenu = (props: SideMenuProps) => {
             {
               icon: "more_horiz",
               color: "ghost",
-              size: "xs",
+              size: "xxs",
               shape: "square",
               id: uid(),
               dropdown: [
@@ -78,7 +78,7 @@ export const useSideMenu = (props: SideMenuProps) => {
             {
               icon: "add",
               color: "ghost",
-              size: "xs",
+              size: "xxs",
               shape: "square",
               id: uid(),
               dropdown: [
@@ -109,7 +109,7 @@ export const useSideMenu = (props: SideMenuProps) => {
             {
               icon: "more_horiz",
               color: "ghost",
-              size: "xs",
+              size: "xxs",
               shape: "square",
               id: uid(),
               dropdown: [
@@ -130,7 +130,7 @@ export const useSideMenu = (props: SideMenuProps) => {
             {
               icon: "add",
               color: "ghost",
-              size: "xs",
+              size: "xxs",
               shape: "square",
               id: uid(),
               dropdown: [
@@ -155,7 +155,7 @@ export const useSideMenu = (props: SideMenuProps) => {
             {
               icon: "more_horiz",
               color: "ghost",
-              size: "xs",
+              size: "xxs",
               shape: "square",
               id: uid(),
               dropdown: [

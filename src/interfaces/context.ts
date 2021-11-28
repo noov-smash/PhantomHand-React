@@ -9,7 +9,6 @@ export interface ContextProps {
   app: {
     isLoading: boolean;
   };
-  debug: boolean;
   user: UnsignedUserProps | SignedUserProps;
   project: UnloadedProjectProps | LoadedProjectProps;
   usb:
@@ -39,11 +38,13 @@ export interface ContextProps {
         isConnected: false;
         devices?: MediaDeviceInfo[];
         stream?: MediaStream;
+        recorder?: MediaRecorder;
       }
     | {
         isConnected: true;
         devices?: MediaDeviceInfo[];
         stream: MediaStream;
+        recorder: MediaRecorder;
       };
   emulator: {
     state: "standby" | "recording" | "playing" | "repeating";

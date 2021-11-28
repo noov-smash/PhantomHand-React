@@ -1,6 +1,6 @@
 import React from "react";
 // Firebase
-import firebase, { firestore, database } from "../configs/firebase";
+import firebase, { firestore, database, storage } from "../configs/firebase";
 // Interfaces
 import {
   FirebaseProjectProps,
@@ -234,6 +234,38 @@ export const useDatabase = () => {
     [userConverter]
   );
 
+  /**
+   *Storageにファイルを保存する
+   */
+  const saveFile = React.useCallback(
+    async (filename: string, data: Blob): Promise<void> => {
+      try {
+        console.log("Saving File to Storage...", filename, data);
+        const storageRef = storage.ref();
+        const fileRef = storageRef.child(`files/${filename}`);
+        const file = await fileRef.put(data);
+        const filepath = await file.ref.getDownloadURL();
+        console.log("Saved", filepath);
+        await setContext((c) => {
+          delete c.emulator.command.blob;
+          return {
+            ...c,
+            emulator: {
+              ...c.emulator,
+              command: {
+                ...c.emulator.command,
+                videoUrl: filepath,
+              },
+            },
+          };
+        });
+      } catch (error) {
+        throw error;
+      }
+    },
+    [setContext]
+  );
+
   return {
     fetchProjects,
     fetchProject,
@@ -246,5 +278,6 @@ export const useDatabase = () => {
     removeCommand,
     fetchUser,
     saveUser,
+    saveFile,
   };
 };

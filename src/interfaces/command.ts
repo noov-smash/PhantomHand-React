@@ -3,6 +3,8 @@ export interface CommandProps {
   title: string;
   signals: SignalProps[];
   path: string;
+  blob?: Blob;
+  videoUrl?: string;
 }
 
 export interface SignalProps {

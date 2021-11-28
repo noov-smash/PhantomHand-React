@@ -27,14 +27,24 @@ export interface NavItemProps {
   _onClick?: () => void;
 }
 
+interface WrapperProps extends NavItemProps {
+  rect?: DOMRect;
+}
+
 export const NavItem = (props: NavItemProps) => {
+  const liRef = React.useRef<HTMLLIElement>(null);
   const setData = React.useCallback(() => {
     if (props._isEditing) return;
     else if (props._onClick) props._onClick();
   }, [props]);
 
   return (
-    <Wrapper {...props} key={props.title}>
+    <Wrapper
+      {...props}
+      key={props.title}
+      ref={liRef}
+      rect={liRef.current?.getBoundingClientRect()}
+    >
       <InnerLeft onClick={setData}>
         {props._isEditing ? (
           <TextInput
@@ -51,24 +61,32 @@ export const NavItem = (props: NavItemProps) => {
       <InnerRight>
         {props._rightButtons &&
           props._rightButtons.map((e) => (
-            <div key={e.id} className="material-icon fs-s right-icon">
+            <div key={e.id} className="material-icon fs-xs right-icon">
               <IconDropdownButton {...e} />
             </div>
           ))}
       </InnerRight>
+      {props.data.videoUrl && (
+        <video loop playsInline autoPlay muted className="video">
+          <source src={props.data.videoUrl} type="video/webm" />
+        </video>
+      )}
     </Wrapper>
   );
 };
 
 export default NavItem;
 
-const Wrapper = styled.li.attrs<NavItemProps>((props) => ({
+const Wrapper = styled.li.attrs<WrapperProps>((props) => ({
   style: {
     paddingLeft: `${Layout.SpacingX(3 * props._level || 1)}`,
   },
-}))<NavItemProps>`
+}))<WrapperProps>`
   ${Layout.alignElements("flex", "space-between", "center")};
   padding: ${Layout.spacingVH(1 / 4, 1 / 2)};
+  position: relative;
+  overflow-x: visible;
+  width: 100%;
   ${(props) =>
     props._state === "active" &&
     !props._isEditing &&
@@ -81,12 +99,36 @@ const Wrapper = styled.li.attrs<NavItemProps>((props) => ({
   &:hover {
     background: ${Colors.bgColorLv2};
     cursor: pointer;
-  }
-  &:hover .right-icon {
-    visibility: visible;
+    .right-icon {
+      visibility: visible;
+    }
+    .video {
+      display: block;
+    }
   }
   .right-icon {
     visibility: hidden;
+  }
+  .video {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    width: 300px;
+    left: ${(props) => (props.rect ? `${props.rect.width}px` : "256px")};
+    ${(props) =>
+      props.rect
+        ? props.rect.y + (300 * 9) / 16 > window.innerHeight
+          ? css`
+              bottom: ${`${
+                window.innerHeight - props.rect.y - props.rect.height
+              }px`};
+            `
+          : css`
+              top: ${props.rect.y}px;
+            `
+        : css`
+            bottom: 0;
+          `}
   }
 `;
 

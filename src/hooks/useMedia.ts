@@ -44,6 +44,7 @@ export const useMedia = () => {
             ...c.media,
             isConnected: true,
             stream: stream,
+            recorder: new MediaRecorder(stream),
           },
         }));
       } catch (error) {

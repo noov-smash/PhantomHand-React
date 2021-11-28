@@ -14,7 +14,7 @@ export const useEmulator = () => {
   const [context, setContext] = React.useContext(Context);
   const [buffer, setBuffer] = React.useState<SignalProps[]>();
   const intervalRef = React.useRef<NodeJS.Timeout | null>();
-  const { saveCommand, storeCommand } = useDatabase();
+  const { saveCommand, storeCommand, saveFile } = useDatabase();
   const { onPush, onTilt, neutral } = useGamePad();
 
   const bufferRef = React.useRef(buffer);
@@ -24,6 +24,7 @@ export const useEmulator = () => {
 
   const stopRec = React.useCallback((): void => {
     console.log("Stop...");
+    if (context.media.recorder) context.media.recorder.stop();
     setContext((c: ContextProps) => ({
       ...c,
       emulator: {
@@ -45,7 +46,7 @@ export const useEmulator = () => {
       intervalRef.current = null;
     }
     neutral();
-  }, [neutral, setContext]);
+  }, [context.media.recorder, neutral, setContext]);
 
   const stopPlay = React.useCallback(
     (reset?: boolean): void => {
@@ -140,6 +141,22 @@ export const useEmulator = () => {
 
   const rec = React.useCallback((): void => {
     console.log("Rec...");
+    if (context.media.recorder) {
+      context.media.recorder.ondataavailable = (e) => {
+        const blob = new Blob([e.data], { type: e.data.type });
+        setContext((c: ContextProps) => ({
+          ...c,
+          emulator: {
+            ...c.emulator,
+            command: {
+              ...c.emulator.command,
+              blob: blob,
+            },
+          },
+        }));
+      };
+      context.media.recorder.start();
+    }
     setContext((c: ContextProps) => ({
       ...c,
       emulator: {
@@ -153,7 +170,7 @@ export const useEmulator = () => {
       },
     }));
     intervalRef.current = setInterval(recInterval, 1000 / 60);
-  }, [recInterval, setContext]);
+  }, [context.media.recorder, recInterval, setContext]);
 
   const play = React.useCallback(
     (repeat: boolean): void => {
@@ -176,8 +193,15 @@ export const useEmulator = () => {
     if (!context.emulator.command.signals) return;
     console.log("Saving...", context.emulator.command.signals);
     try {
+      // Upload Webm
+      context.emulator.command.blob &&
+        (await saveFile(
+          `${context.emulator.command.id}.webm`,
+          context.emulator.command.blob
+        ));
       // AminUser
       if (context.user.isAdmin) {
+        // Exist
         if (context.emulator.command.path) {
           await saveCommand(
             `${context.project.id}/${context.emulator.command.path}`,
@@ -190,6 +214,7 @@ export const useEmulator = () => {
           );
           window.alert("Updated");
         } else {
+          // New
           const path = `${context.project.id}/${context.project.data.length}`;
           await saveCommand(path, {
             id: uid(),
@@ -236,6 +261,7 @@ export const useEmulator = () => {
     context.project.id,
     context.user.isAdmin,
     saveCommand,
+    saveFile,
     storeCommand,
   ]);
 

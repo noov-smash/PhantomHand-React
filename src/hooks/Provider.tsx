@@ -33,7 +33,6 @@ export const ContextInitial: ContextProps = {
   app: {
     isLoading: false,
   },
-  debug: false,
   user: {
     isSignedIn: false,
     uid: undefined,
