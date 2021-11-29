@@ -22,8 +22,8 @@ export const Screen: React.FC = () => {
         ref={videoRef}
         rect={divRef.current?.getBoundingClientRect()}
         autoPlay
-        playsInline
         muted
+        playsInline
         // controls
       />
     </Wrapper>

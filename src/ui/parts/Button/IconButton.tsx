@@ -270,7 +270,7 @@ const StyledDropdownWrapper = styled.div.attrs<{ x: number; y: number }>(
   })
 )<{ x: number; y: number }>`
   position: fixed;
-  z-index: 100;
+  z-index: 1010;
   font-family: ${Fonts.FontFamily};
   display: inline-block;
 `;

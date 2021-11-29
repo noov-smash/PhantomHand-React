@@ -3,6 +3,7 @@ import React from "react";
 import styled, { css } from "styled-components";
 import * as Layout from "../../../styles/Layout";
 import { Colors } from "../../../styles/Colors";
+import { Shadow } from "../../../styles/Effects";
 import { FontWeight, IconSize } from "../../../styles/Fonts";
 
 // Hooks
@@ -112,8 +113,9 @@ const Wrapper = styled.li.attrs<WrapperProps>((props) => ({
   .video {
     display: none;
     position: fixed;
-    z-index: 100;
+    z-index: 1000;
     width: 300px;
+    box-shadow: ${Shadow.float};
     left: ${(props) => (props.rect ? `${props.rect.width}px` : "256px")};
     ${(props) =>
       props.rect

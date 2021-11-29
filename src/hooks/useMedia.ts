@@ -33,9 +33,7 @@ export const useMedia = () => {
             height: { min: 360, ideal: 1080 },
             aspectRatio: { ideal: 1.7777777778 },
           },
-          /*audio: {
-              deviceId: deviceId
-            } */
+          // audio: true
         });
         if (!context.media.devices || !stream) return;
         setContext((c) => ({

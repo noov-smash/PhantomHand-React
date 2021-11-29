@@ -22,9 +22,32 @@ export const useEmulator = () => {
     bufferRef.current = buffer;
   }, [buffer]);
 
-  const stopRec = React.useCallback((): void => {
+  const recorderStart = React.useCallback( ():void => {
+    if (!context.media.recorder) return
+    context.media.recorder.ondataavailable = (e) => {
+      const blob = new Blob([e.data], { type: e.data.type });
+      setContext((c: ContextProps) => ({
+        ...c,
+        emulator: {
+          ...c.emulator,
+          command: {
+            ...c.emulator.command,
+            blob: blob,
+          },
+        },
+      }));
+    };
+    context.media.recorder.start();
+  }, [context.media.recorder, setContext])
+
+  const recorderStop = React.useCallback( (): void => {
+    if (!context.media.recorder) return
+    context.media.recorder.stop();
+  },[context.media.recorder])
+
+  const stopRec = React.useCallback(async(): Promise<void> => {
     console.log("Stop...");
-    if (context.media.recorder) context.media.recorder.stop();
+    recorderStop()
     setContext((c: ContextProps) => ({
       ...c,
       emulator: {
@@ -46,10 +69,10 @@ export const useEmulator = () => {
       intervalRef.current = null;
     }
     neutral();
-  }, [context.media.recorder, neutral, setContext]);
+  }, [neutral, recorderStop, setContext]);
 
   const stopPlay = React.useCallback(
-    (reset?: boolean): void => {
+    async (reset?: boolean): Promise<void> => {
       console.log("Stop...");
       setContext((c: ContextProps) => ({
         ...c,
@@ -100,7 +123,6 @@ export const useEmulator = () => {
     setContext((c: ContextProps) => {
       if (!bufferRef.current) return { ...c };
       const time = Number((c.emulator.time + 1 / 60).toFixed(2));
-
       const data = bufferRef.current.filter((b) => b.t === time);
       if (!data) return { ...c };
       Promise.all(
@@ -139,24 +161,9 @@ export const useEmulator = () => {
     stopPlay,
   ]);
 
-  const rec = React.useCallback((): void => {
+  const rec = React.useCallback(async(): Promise<void> => {
     console.log("Rec...");
-    if (context.media.recorder) {
-      context.media.recorder.ondataavailable = (e) => {
-        const blob = new Blob([e.data], { type: e.data.type });
-        setContext((c: ContextProps) => ({
-          ...c,
-          emulator: {
-            ...c.emulator,
-            command: {
-              ...c.emulator.command,
-              blob: blob,
-            },
-          },
-        }));
-      };
-      context.media.recorder.start();
-    }
+    recorderStart()
     setContext((c: ContextProps) => ({
       ...c,
       emulator: {
@@ -170,10 +177,10 @@ export const useEmulator = () => {
       },
     }));
     intervalRef.current = setInterval(recInterval, 1000 / 60);
-  }, [context.media.recorder, recInterval, setContext]);
+  }, [recInterval, recorderStart, setContext]);
 
   const play = React.useCallback(
-    (repeat: boolean): void => {
+    async (repeat: boolean): Promise<void> => {
       console.log(repeat ? "Repeat..." : "Play...");
       setContext((c: ContextProps) => ({
         ...c,
@@ -194,22 +201,23 @@ export const useEmulator = () => {
     console.log("Saving...", context.emulator.command.signals);
     try {
       // Upload Webm
-      context.emulator.command.blob &&
-        (await saveFile(
-          `${context.emulator.command.id}.webm`,
-          context.emulator.command.blob
+      const data = context.emulator.command
+      data.blob &&
+        (data.videoUrl = await saveFile(
+          `${data.id}.webm`,
+          data.blob
         ));
       // AminUser
       if (context.user.isAdmin) {
         // Exist
-        if (context.emulator.command.path) {
+        if (data.path) {
           await saveCommand(
-            `${context.project.id}/${context.emulator.command.path}`,
+            `${context.project.id}/${data.path}`,
             {
-              id: context.emulator.command.id,
-              title: context.emulator.command.title,
-              path: context.emulator.command.path,
-              data: context.emulator.command,
+              id: data.id,
+              title: data.title,
+              path: data.path,
+              data: data,
             }
           );
           window.alert("Updated");
@@ -225,7 +233,7 @@ export const useEmulator = () => {
               {
                 id: uid(),
                 title: "Untitled",
-                data: context.emulator.command,
+                data: data,
               },
             ],
           });
@@ -239,14 +247,14 @@ export const useEmulator = () => {
           `PhantomHand-${context.project.id}`
         );
         if (!storage || !context.project.data) return;
-        const path: string[] = context.emulator.command.path.split("/");
+        const path: string[] = data.path.split("/");
         const newData: any = Array.from(context.project.data);
         if (path.length === 1 || !newData) return;
         if (path.length === 3) {
-          newData[path[0]][path[1]][path[2]].data = context.emulator.command;
+          newData[path[0]][path[1]][path[2]].data = data;
         } else if (path.length === 5) {
           newData[path[0]][path[1]][path[2]][path[3]][path[4]].data =
-            context.emulator.command;
+            data;
         }
         await storeCommand(context.project.id, newData);
         window.alert("Updated LocalStorage");
@@ -291,5 +299,7 @@ export const useEmulator = () => {
     save,
     share,
     stopAll,
+    recorderStart,
+    recorderStop,
   };
 };

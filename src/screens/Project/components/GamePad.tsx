@@ -53,7 +53,7 @@ export const GamePad: React.FC = () => {
             <span>Y: {context.gamePad.stickStates[21]}</span>
           </div>
         </Sticks>
-        <StyledID>{context.user.isSignedIn && context.user.uid}</StyledID>
+        <StyledID className={context.user.isAdmin ? 'admin' : 'anonymous'}>{context.user.isSignedIn && context.user.uid}</StyledID>
         <Gamepad
           gamepadIndex={0}
           onConnect={(gamepadIndex) => connectHandler(gamepadIndex)}
@@ -65,18 +65,7 @@ export const GamePad: React.FC = () => {
         </Gamepad>
       </GamePadPreview>
     );
-  }, [
-    context.gamePad.buttonStates,
-    context.gamePad.stickStates,
-    context.user.isSignedIn,
-    context.user.uid,
-    onPush,
-    onRelease,
-    axisChangeHandler,
-    buttonChangeHandler,
-    connectHandler,
-    disconnectHandler,
-  ]);
+  }, [onPush, onRelease, axisChangeHandler, context.gamePad.buttonStates, context.gamePad.stickStates, context.user.isAdmin, context.user.isSignedIn, context.user.uid, buttonChangeHandler, connectHandler, disconnectHandler]);
 };
 
 const GamePadPreview = styled.div`
@@ -132,4 +121,7 @@ const StyledID = styled.span`
   right: 8px;
   color: ${Colors.elementColorMute};
   font-size: 9px;
+  &.admin {
+    color: ${Colors.brandColorPrimary};
+  }
 `;

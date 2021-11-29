@@ -238,7 +238,7 @@ export const useDatabase = () => {
    *Storageにファイルを保存する
    */
   const saveFile = React.useCallback(
-    async (filename: string, data: Blob): Promise<void> => {
+    async (filename: string, data: Blob): Promise<string> => {
       try {
         console.log("Saving File to Storage...", filename, data);
         const storageRef = storage.ref();
@@ -259,6 +259,7 @@ export const useDatabase = () => {
             },
           };
         });
+        return filepath
       } catch (error) {
         throw error;
       }

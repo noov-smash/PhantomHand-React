@@ -22,7 +22,7 @@ export interface ProjectHeaderProps {}
 export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
   const [context] = React.useContext(Context);
   const { connectToUsbDevice, disconnectUsbDevice, findUsbDevices } = useUsb();
-  const { rec, stopRec, play, stopPlay } = useEmulator();
+  const { rec, stopRec, play, stopPlay, recorderStart, recorderStop } = useEmulator();
   const { connectToBluetoothDevice, disconnectBluetooth } = useBluetooth();
   const { getMediaDevices, connectToUserMedia } = useMedia();
 
@@ -147,6 +147,12 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
 
         {/*----- Right -----*/}
         <InnerRight>
+          {context.user.isAdmin&&
+            <>
+              <button onClick={recorderStart}>Rec</button>
+              <button onClick={recorderStop}>Stop</button>
+            </>
+          }
           <Time>
             <span className="material-icon">timer</span>
             <span>{context.emulator.time.toFixed(2)}</span>

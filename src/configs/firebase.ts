@@ -16,6 +16,16 @@ const firebaseConfig = {
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
+// const firebaseDevConfig = {
+//   apiKey: "AIzaSyAa3cHHe-kq5RQavQDQogCich-CVeJ2VfE",
+//   authDomain: "masterhand-app.firebaseapp.com",
+//   databaseURL: "https://masterhand-app-default-rtdb.firebaseio.com",
+//   projectId: "masterhand-app",
+//   storageBucket: "masterhand-app.appspot.com",
+//   messagingSenderId: "234278796821",
+//   appId: "1:234278796821:web:48b4b82b63cdbe2c01181c"
+// }
+
 firebase.initializeApp(firebaseConfig);
 
 export default firebase;
