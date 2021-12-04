@@ -23,7 +23,9 @@ export const useEmulator = () => {
   }, [buffer]);
 
   const recorderStart = React.useCallback((): void => {
-    if (!context.media.recorder) return;
+    if (!context.media.recorder || context.media.recorder.state === "recording")
+      return;
+    console.log('Screen Rec...')
     context.media.recorder.ondataavailable = (e: any) => {
       const blob = new Blob([e.data], { type: e.data.type });
       setContext((c: ContextProps) => ({
@@ -41,7 +43,9 @@ export const useEmulator = () => {
   }, [context.media.recorder, setContext]);
 
   const recorderStop = React.useCallback((): void => {
-    if (!context.media.recorder) return;
+    if (!context.media.recorder || context.media.recorder.state !== "recording")
+      return;
+      console.log('Screen Stop...')
     context.media.recorder.stop();
   }, [context.media.recorder]);
 
@@ -206,9 +210,9 @@ export const useEmulator = () => {
       const data = context.emulator.command;
       if (data.blob)
         data.videoUrl = await saveFile(`files/${data.id}.webm`, data.blob);
-      else data.videoUrl = undefined;
+      else delete data.videoUrl;
       // AminUser
-      if (context.user.isAdmin) {
+      if (context.user.isAdmin && context.emulator.saveTo === "db") {
         // Exist
         if (data.path) {
           await saveCommand(`${context.project.id}/${data.path}`, {
@@ -241,7 +245,7 @@ export const useEmulator = () => {
           );
         }
       }
-      // AnonymousUser
+      // AnonymousUser or Local Storage
       else {
         if (!context.project.id) return;
         const storage = localStorage.getItem(
@@ -281,6 +285,7 @@ export const useEmulator = () => {
     }
   }, [
     context.emulator.command,
+    context.emulator.saveTo,
     context.project.id,
     context.project.privateData,
     context.project.publicData?.length,

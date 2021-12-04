@@ -55,7 +55,7 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
 
           {/* USB */}
           <IconDropdownButton
-            data-tip={`FT232: ${context.usb.isConnected ? "ON" : "OFF"}`}
+            tooltip={`FT232: ${context.usb.isConnected ? "ON" : "OFF"}`}
             id={uid()}
             color={context.usb.isConnected ? "outlinePrimary" : "outline"}
             shape="square"
@@ -86,7 +86,7 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
 
           {/* Bluetooth */}
           <IconDropdownButton
-            data-tip={`CC2640R2F: ${
+            tooltip={`CC2640R2F: ${
               context.bluetooth.isConnected ? "ON" : "OFF"
             }`}
             id={uid()}
@@ -174,45 +174,38 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
         <InnerRight>
           {context.user.isAdmin && (
             <>
-              {context.media.recorder ? (
-                context.media.recorder?.state === "recording" ? (
-                  <IconButton
-                    {...{
-                      icon: "cancel_presentation",
-                      color: "outline",
-                      size: "s",
-                      shape: "square",
-                      tooltip: "Capture",
-                    }}
-                    onClick={() => {
-                      recorderStop();
-                      stopPlay(false);
-                    }}
-                  />
-                ) : (
-                  <IconButton
-                    {...{
-                      icon: "center_focus_strong",
-                      color: "outline",
-                      size: "s",
-                      shape: "square",
-                      tooltip: "Capture Stop",
-                    }}
-                    onClick={recorderStart}
-                  />
-                )
-              ) : (
-                <IconButton
-                  {...{
-                    icon: "cancel_presentation",
-                    color: "outline",
-                    size: "s",
-                    shape: "square",
-                    tooltip: "Capture",
-                    isInactive: true,
-                  }}
-                />
-              )}
+              <IconButton
+                {...{
+                  icon: "center_focus_strong",
+                  color: "outline",
+                  size: "s",
+                  shape: "square",
+                  tooltip: "Start",
+                }}
+                onClick={recorderStart}
+                isInactive={
+                  !context.media.recorder ||
+                  context.emulator.state === "recording" ||
+                  context.emulator.state === "repeating" ||
+                  context.emulator.command.signals.length === 0
+                }
+              />
+              <IconButton
+                {...{
+                  icon: "cancel_presentation",
+                  color: "outline",
+                  size: "s",
+                  shape: "square",
+                  tooltip: "Stop",
+                }}
+                onClick={recorderStop}
+                isInactive={
+                  !context.media.recorder ||
+                  context.emulator.state === "recording" ||
+                  context.emulator.state === "repeating" ||
+                  context.emulator.command.signals.length === 0
+                }
+              />
               <Spacer />
             </>
           )}
