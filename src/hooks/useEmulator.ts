@@ -294,8 +294,7 @@ export const useEmulator = () => {
 
   const download = React.useCallback(async (): Promise<void> => {
     try {
-      const storage = localStorage.getItem(`PhantomHand-${context.project.id}`);
-      if (!storage || !context.project.privateData) return;
+      if (!context.project.privateData) return;
       const data = context.emulator.command;
       const newData: any = Array.from(context.project.privateData);
       const id1 = uid();
