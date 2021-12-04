@@ -24,7 +24,7 @@ export const useEmulator = () => {
 
   const recorderStart = React.useCallback((): void => {
     if (!context.media.recorder) return;
-    context.media.recorder.ondataavailable = (e: BlobEvent) => {
+    context.media.recorder.ondataavailable = (e: any) => {
       const blob = new Blob([e.data], { type: e.data.type });
       setContext((c: ContextProps) => ({
         ...c,
