@@ -2,18 +2,17 @@ import React from "react";
 import uid from "uniqid";
 // Hooks
 import { useDatabase } from "../../../hooks/useDatabase";
-import { useEmulator } from "../../../hooks/useEmulator";
-import { LoadedProjectProps } from "../../../interfaces";
+import { ProjectDataProps } from "../../../interfaces";
 import { Context } from "../../../hooks/Provider";
 // Interfaces
 import { MenuGroupProps } from "../../../ui/systems/Navigation/MenuGroup";
-import { SideMenuProps } from "../components/SideMenu";
+import { MenuProps } from "../../../ui/systems/SideMenu/Menu";
 import { NavFolderProps } from "../../../ui/parts/Navigation/NavFolder";
 import { NavIndexProps } from "../../../ui/parts/Navigation/NavIndex";
 import { NavItemProps } from "../../../ui/parts/Navigation/NavItem";
 import { NeutralGamepadProps } from "../../../hooks/Provider";
 
-export const useSideMenu = (props: SideMenuProps) => {
+export const useSideMenu = (props: MenuProps) => {
   type indexActionProps = {
     type: "index";
     groupIndex: number;
@@ -43,7 +42,6 @@ export const useSideMenu = (props: SideMenuProps) => {
   const [context, setContext] = React.useContext(Context);
   const [activeItem, setActiveItem] = React.useState<string>();
   const { saveCommand, storeCommand } = useDatabase();
-  const { stopAll } = useEmulator();
   const menuRef = React.useRef(menu);
 
   React.useEffect(() => {
@@ -180,21 +178,27 @@ export const useSideMenu = (props: SideMenuProps) => {
   );
 
   const save = React.useCallback(
-    async (data: MenuGroupProps[]): Promise<void> => {
+    async (data: MenuGroupProps[], notUpload?: boolean): Promise<void> => {
       setMenu(convert().toFormat(data));
       const saveData = convert().toRaw(data);
-      if (!context.user.isAdmin) {
+      if (props.saveTo === "storage") {
         if (!context.project.id) return;
-        storeCommand(context.project.id, saveData);
+        storeCommand(context.project.id, saveData, notUpload || false);
         return;
-      }
-      await saveCommand(props.index.id, saveData);
+      } else if (
+        props.saveTo === "db" &&
+        props.isEditable &&
+        context.user.isAdmin
+      )
+        await saveCommand(props.index.id, saveData);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       context.project.id,
       context.user.isAdmin,
       props.index.id,
+      props.saveTo,
+      props.isEditable,
       saveCommand,
       storeCommand,
     ]
@@ -424,8 +428,7 @@ export const useSideMenu = (props: SideMenuProps) => {
           : "";
       item._state = "active";
       setActiveItem(item.id);
-      save(newMenu);
-      stopAll();
+      save(newMenu, true);
       setContext((c) => ({
         ...c,
         emulator: {
@@ -452,7 +455,6 @@ export const useSideMenu = (props: SideMenuProps) => {
         },
       }));
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [inactivateItems, save, setContext]
   );
 
@@ -531,7 +533,7 @@ export const useSideMenu = (props: SideMenuProps) => {
           const keys = filterKeys(d1);
           const d2: { [key: string]: any } = {};
           keys.forEach((key: string) => {
-            if (!d1[key]) return;
+            if (d1[key] !== 0 && !d1[key]) return;
             else if (Array.isArray(d1[key]))
               d2[key] = d1[key].map((d3: MenuGroupProps) =>
                 typeof d3 === "object" ? filterObj(d3) : d3
@@ -545,7 +547,7 @@ export const useSideMenu = (props: SideMenuProps) => {
         };
         return data.map((d: MenuGroupProps) => filterObj(d));
       },
-      toFormat(data: LoadedProjectProps["data"]): MenuGroupProps[] | undefined {
+      toFormat(data: ProjectDataProps[]): MenuGroupProps[] | undefined {
         if (!data) return undefined;
         return data.map((d, i) => ({
           id: d.id,

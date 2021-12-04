@@ -22,8 +22,8 @@ export const useEmulator = () => {
     bufferRef.current = buffer;
   }, [buffer]);
 
-  const recorderStart = React.useCallback( ():void => {
-    if (!context.media.recorder) return
+  const recorderStart = React.useCallback((): void => {
+    if (!context.media.recorder) return;
     context.media.recorder.ondataavailable = (e) => {
       const blob = new Blob([e.data], { type: e.data.type });
       setContext((c: ContextProps) => ({
@@ -38,16 +38,20 @@ export const useEmulator = () => {
       }));
     };
     context.media.recorder.start();
-  }, [context.media.recorder, setContext])
+  }, [context.media.recorder, setContext]);
 
-  const recorderStop = React.useCallback( (): void => {
-    if (!context.media.recorder) return
+  const recorderStop = React.useCallback((): void => {
+    if (!context.media.recorder) return;
     context.media.recorder.stop();
-  },[context.media.recorder])
+  }, [context.media.recorder]);
 
-  const stopRec = React.useCallback(async(): Promise<void> => {
-    console.log("Stop...");
-    recorderStop()
+  const stopRec = React.useCallback(async (): Promise<void> => {
+    console.log("Stop Rec...");
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    recorderStop();
     setContext((c: ContextProps) => ({
       ...c,
       emulator: {
@@ -64,39 +68,26 @@ export const useEmulator = () => {
         },
       },
     }));
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
     neutral();
   }, [neutral, recorderStop, setContext]);
 
   const stopPlay = React.useCallback(
     async (reset?: boolean): Promise<void> => {
-      console.log("Stop...");
+      if (intervalRef.current) {
+        console.log("Stop Play...");
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      neutral();
       setContext((c: ContextProps) => ({
         ...c,
         emulator: reset
           ? { ...c.emulator, state: "standby", time: 0 }
           : { ...c.emulator, state: "standby" },
       }));
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      neutral();
     },
     [neutral, setContext]
   );
-
-  const stopAll = React.useCallback((): void => {
-    if (
-      context.emulator.state === "playing" ||
-      context.emulator.state === "repeating"
-    )
-      stopPlay();
-    if (context.emulator.state === "recording") stopRec();
-  }, [context.emulator.state, stopPlay, stopRec]);
 
   const recInterval = React.useCallback((): void => {
     setContext((c: ContextProps) => ({
@@ -161,9 +152,15 @@ export const useEmulator = () => {
     stopPlay,
   ]);
 
-  const rec = React.useCallback(async(): Promise<void> => {
+  const rec = React.useCallback(async (): Promise<void> => {
     console.log("Rec...");
-    recorderStart()
+    if (context.emulator.command.signals.length > 0) {
+      const res = window.confirm(
+        "既存のコマンドを破棄して新記録画を開始しますか？\nDiscard an existing command and start a new recording ?\n"
+      );
+      if (!res) return;
+    }
+    recorderStart();
     setContext((c: ContextProps) => ({
       ...c,
       emulator: {
@@ -177,7 +174,12 @@ export const useEmulator = () => {
       },
     }));
     intervalRef.current = setInterval(recInterval, 1000 / 60);
-  }, [recInterval, recorderStart, setContext]);
+  }, [
+    context.emulator.command.signals.length,
+    recInterval,
+    recorderStart,
+    setContext,
+  ]);
 
   const play = React.useCallback(
     async (repeat: boolean): Promise<void> => {
@@ -201,29 +203,26 @@ export const useEmulator = () => {
     console.log("Saving...", context.emulator.command.signals);
     try {
       // Upload Webm
-      const data = context.emulator.command
-      data.blob &&
-        (data.videoUrl = await saveFile(
-          `${data.id}.webm`,
-          data.blob
-        ));
+      const data = context.emulator.command;
+      if (data.blob)
+        data.videoUrl = await saveFile(`files/${data.id}.webm`, data.blob);
+      else data.videoUrl = undefined;
       // AminUser
       if (context.user.isAdmin) {
         // Exist
         if (data.path) {
-          await saveCommand(
-            `${context.project.id}/${data.path}`,
-            {
-              id: data.id,
-              title: data.title,
-              path: data.path,
-              data: data,
-            }
+          await saveCommand(`${context.project.id}/${data.path}`, {
+            id: data.id,
+            title: data.title,
+            path: data.path,
+            data: data,
+          });
+          window.alert(
+            `"${data.title}" を上書きしました。\nUpdated "${data.title}."`
           );
-          window.alert("Updated");
         } else {
           // New
-          const path = `${context.project.id}/${context.project.data.length}`;
+          const path = `${context.project.id}/${context.project.publicData?.length}`;
           await saveCommand(path, {
             id: uid(),
             index: {
@@ -237,7 +236,9 @@ export const useEmulator = () => {
               },
             ],
           });
-          window.alert("Saved As New Data");
+          window.alert(
+            `新規コマンド"Untitled"として保存しました。\nSaved as  a new command "Untitled".`
+          );
         }
       }
       // AnonymousUser
@@ -246,30 +247,81 @@ export const useEmulator = () => {
         const storage = localStorage.getItem(
           `PhantomHand-${context.project.id}`
         );
-        if (!storage || !context.project.data) return;
+        if (!storage || !context.project.privateData) return;
         const path: string[] = data.path.split("/");
-        const newData: any = Array.from(context.project.data);
-        if (path.length === 1 || !newData) return;
-        if (path.length === 3) {
+        const newData: any = Array.from(context.project.privateData);
+        if (path.length === 1 || !newData) {
+          const id1 = uid();
+          const id2 = uid();
+          newData.splice(newData.length, 0, {
+            id: id1,
+            index: { title: "Untitled", id: uid() },
+            items: [
+              { id: id2, path: `0/${id1}/0`, title: "Untitled", data: data },
+            ],
+          });
+        } else if (path.length === 3)
           newData[path[0]][path[1]][path[2]].data = data;
-        } else if (path.length === 5) {
-          newData[path[0]][path[1]][path[2]][path[3]][path[4]].data =
-            data;
-        }
+        else if (path.length === 5)
+          newData[path[0]][path[1]][path[2]][path[3]][path[4]].data = data;
+        else window.alert("保存に失敗しました\n Failed to save.");
         await storeCommand(context.project.id, newData);
-        window.alert("Updated LocalStorage");
+        if (data.path)
+          window.alert(
+            `"${data.title}" を上書きしました。\nUpdated "${data.title}."`
+          );
+        else
+          window.alert(
+            `新規コマンド"Untitled"として保存しました。\nSaved as  a new command "Untitled".`
+          );
       }
     } catch (error) {
-      window.alert("Failed");
+      window.alert("保存に失敗しました\n Failed to save.");
       console.error(error);
     }
   }, [
     context.emulator.command,
-    context.project.data,
     context.project.id,
+    context.project.privateData,
+    context.project.publicData?.length,
     context.user.isAdmin,
     saveCommand,
     saveFile,
+    storeCommand,
+  ]);
+
+  const download = React.useCallback(async (): Promise<void> => {
+    try {
+      const storage = localStorage.getItem(`PhantomHand-${context.project.id}`);
+      if (!storage || !context.project.privateData) return;
+      const data = context.emulator.command;
+      const newData: any = Array.from(context.project.privateData);
+      const id1 = uid();
+      const id2 = uid();
+      newData.splice(newData.length, 0, {
+        id: id1,
+        index: { title: "Downloaded", id: uid() },
+        items: [
+          {
+            id: id2,
+            path: `0/${id1}/0`,
+            title: data.title || "Untitled",
+            data: data,
+          },
+        ],
+      });
+      await storeCommand(context.project.id, newData);
+      window.alert(
+        `"Local" にコマンドをダウンロードしました。\nDownloaded the command to "Local".`
+      );
+    } catch (error) {
+      window.alert("ダウンロードに失敗しました\nFailed to download.");
+      console.error(error);
+    }
+  }, [
+    context.emulator.command,
+    context.project.id,
+    context.project.privateData,
     storeCommand,
   ]);
 
@@ -298,7 +350,7 @@ export const useEmulator = () => {
     stopPlay,
     save,
     share,
-    stopAll,
+    download,
     recorderStart,
     recorderStop,
   };

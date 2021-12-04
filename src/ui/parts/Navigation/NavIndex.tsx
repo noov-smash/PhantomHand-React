@@ -1,6 +1,6 @@
 import React from "react";
 // Components
-import { TextInput } from "../Input/Input";
+import { TextInput } from "../Input/TextInput";
 import {
   IconDropdownButton,
   IconDropdownButtonProps,
@@ -73,8 +73,9 @@ const InnerLeft = styled.div`
   ${Layout.alignElements("inline-flex", "flex-start", "center")};
   ${Layout.spacingBetweenElements("horizontal", 0.5)};
   width: 100%;
+  max-width: calc(100% - 36px);
   .title {
-    width: 180px;
+    max-width: calc(100%);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

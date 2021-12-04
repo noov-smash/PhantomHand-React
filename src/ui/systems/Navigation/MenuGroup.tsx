@@ -15,6 +15,7 @@ export interface MenuGroupProps {
   index: NavIndexProps;
   folders?: NavFolderProps[];
   items?: NavItemProps[];
+  width?: number;
 }
 
 export const MenuGroup = (props: MenuGroupProps) => {
@@ -50,6 +51,7 @@ export const MenuGroup = (props: MenuGroupProps) => {
                         {...f}
                         key={f.id}
                         _parentId={`${props.id}__folders`}
+                        _width={props.width}
                       />
                     </StyledDraggableArea>
                   )}
@@ -85,7 +87,7 @@ export const MenuGroup = (props: MenuGroupProps) => {
                       {...provided.dragHandleProps}
                     >
                       {!i.id && console.warn("No Item ID")}
-                      <NavItem {...i} key={i.id} />
+                      <NavItem {...i} key={i.id} _width={props.width} />
                     </StyledDraggableArea>
                   )}
                 </Draggable>
@@ -97,8 +99,6 @@ export const MenuGroup = (props: MenuGroupProps) => {
     </StyledDiv>
   );
 };
-
-export default MenuGroup;
 
 const StyledDiv = styled.div`
   width: 100%;

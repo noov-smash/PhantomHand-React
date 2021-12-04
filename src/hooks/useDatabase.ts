@@ -13,7 +13,7 @@ import { MenuGroupProps } from "../ui/systems/Navigation/MenuGroup";
 import { Context } from "./Provider";
 
 export const useDatabase = () => {
-  const [, setContext] = React.useContext(Context);
+  const [context, setContext] = React.useContext(Context);
 
   const fetchCommands = React.useCallback(
     async (projectId: string): Promise<MenuGroupProps[] | null> => {
@@ -43,7 +43,7 @@ export const useDatabase = () => {
             ...c,
             project: {
               ...c.project,
-              data: res,
+              publicData: res,
             },
           }));
         });
@@ -63,21 +63,6 @@ export const useDatabase = () => {
       }
     },
     []
-  );
-
-  const storeCommand = React.useCallback(
-    (projectId: string, data: any): void => {
-      console.log("Store Commands...");
-      localStorage.setItem(`PhantomHand-${projectId}`, JSON.stringify(data));
-      setContext((c) => ({
-        ...c,
-        project: {
-          ...c.project,
-          data: data,
-        },
-      }));
-    },
-    [setContext]
   );
 
   const pushCommand = React.useCallback(
@@ -137,35 +122,31 @@ export const useDatabase = () => {
   }, []);
 
   const fetchProject = React.useCallback(
-    async (
-      id: string,
-      isAdmin?: boolean
-    ): Promise<FirebaseProjectProps | null> => {
+    async (id: string, isAdmin?: boolean): Promise<void> => {
       console.log("Fetching Project...");
       try {
         const ref = await firestore.collection("Projects").doc(id).get();
-        const data: firebase.firestore.DocumentData | undefined = ref.data();
+        const db: firebase.firestore.DocumentData | undefined = ref.data();
         const storage = localStorage.getItem(`PhantomHand-${id}`);
-
-        const commands = isAdmin
-          ? await watchCommands(id)
-          : storage
-          ? JSON.parse(storage)
-          : await fetchCommands(id);
-
-        return data
-          ? {
-              id: data.id,
-              name: data.name,
-              imageUrl: data.imageUrl,
-              data: commands || [],
-            }
-          : null;
+        await watchCommands(id);
+        db &&
+          setContext((c) => ({
+            ...c,
+            project: {
+              ...c.project,
+              isLoaded: true,
+              id: db.id,
+              name: db.name,
+              imageUrl: db.imageUrl,
+              privateData: storage ? JSON.parse(storage) : [],
+              publicData: c.project.publicData || [],
+            },
+          }));
       } catch (error) {
         throw error;
       }
     },
-    [fetchCommands, watchCommands]
+    [setContext, watchCommands]
   );
 
   const userConverter =
@@ -238,14 +219,14 @@ export const useDatabase = () => {
    *Storageにファイルを保存する
    */
   const saveFile = React.useCallback(
-    async (filename: string, data: Blob): Promise<string> => {
+    async (filePath: string, data: Blob): Promise<string> => {
       try {
-        console.log("Saving File to Storage...", filename, data);
+        console.log("Saving File to Storage...", filePath, data);
         const storageRef = storage.ref();
-        const fileRef = storageRef.child(`files/${filename}`);
+        const fileRef = storageRef.child(filePath);
         const file = await fileRef.put(data);
-        const filepath = await file.ref.getDownloadURL();
-        console.log("Saved", filepath);
+        const fileUrl = await file.ref.getDownloadURL();
+        console.log("Saved", filePath);
         await setContext((c) => {
           delete c.emulator.command.blob;
           return {
@@ -254,17 +235,37 @@ export const useDatabase = () => {
               ...c.emulator,
               command: {
                 ...c.emulator.command,
-                videoUrl: filepath,
+                videoUrl: fileUrl,
               },
             },
           };
         });
-        return filepath
+        return fileUrl;
       } catch (error) {
         throw error;
       }
     },
     [setContext]
+  );
+
+  const storeCommand = React.useCallback(
+    (projectId: string, data: any, notUpload?: boolean): void => {
+      console.log("Store Commands...");
+      localStorage.setItem(`PhantomHand-${projectId}`, JSON.stringify(data));
+      const blob = new Blob([JSON.stringify(data)], {
+        type: "application/json",
+      });
+      if (notUpload !== true)
+        saveFile(`users/${context.user.uid}/${projectId}.json`, blob);
+      setContext((c) => ({
+        ...c,
+        project: {
+          ...c.project,
+          privateData: data,
+        },
+      }));
+    },
+    [context.user.uid, saveFile, setContext]
   );
 
   return {

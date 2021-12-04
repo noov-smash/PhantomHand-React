@@ -22,9 +22,11 @@ export interface ProjectHeaderProps {}
 export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
   const [context] = React.useContext(Context);
   const { connectToUsbDevice, disconnectUsbDevice, findUsbDevices } = useUsb();
-  const { rec, stopRec, play, stopPlay, recorderStart, recorderStop } = useEmulator();
+  const { rec, stopRec, play, stopPlay, recorderStart, recorderStop } =
+    useEmulator();
   const { connectToBluetoothDevice, disconnectBluetooth } = useBluetooth();
-  const { getMediaDevices, connectToUserMedia } = useMedia();
+  const { getMediaDevices, connectToUserMedia, disconnectUserMedia } =
+    useMedia();
 
   React.useEffect(() => {
     getMediaDevices();
@@ -53,7 +55,7 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
 
           {/* USB */}
           <IconDropdownButton
-            tooltip="USB Device"
+            data-tip={`FT232: ${context.usb.isConnected ? "ON" : "OFF"}`}
             id={uid()}
             color={context.usb.isConnected ? "outlinePrimary" : "outline"}
             shape="square"
@@ -84,7 +86,9 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
 
           {/* Bluetooth */}
           <IconDropdownButton
-            tooltip="Bluetooth Device"
+            data-tip={`CC2640R2F: ${
+              context.bluetooth.isConnected ? "ON" : "OFF"
+            }`}
             id={uid()}
             color={context.bluetooth.isConnected ? "outlinePrimary" : "outline"}
             shape="square"
@@ -117,9 +121,14 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
             }
           />
 
-          {/* Media */}
+          <Spacer />
+
+          {/* Video */}
           <IconDropdownButton
             tooltip="Capture Device"
+            data-tip={`VideoCapture: ${
+              context.bluetooth.isConnected ? "ON" : "OFF"
+            }`}
             id={uid()}
             color={context.media.isConnected ? "outlinePrimary" : "outline"}
             shape="square"
@@ -128,12 +137,28 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
             positionY="bottom"
             dropdown={
               context.media.devices
-                ? context.media.devices.map((d) => ({
-                    state: "default",
-                    leftText: d.label,
-                    leftIcon: "videocam",
-                    onClick: () => connectToUserMedia(d.deviceId),
-                  }))
+                ? context.media.isConnected
+                  ? context.media.devices
+                      .map((d) => ({
+                        state: "default",
+                        leftText: d.label,
+                        leftIcon: "videocam",
+                        onClick: () => connectToUserMedia(d.deviceId),
+                      }))
+                      .concat([
+                        {
+                          state: "active",
+                          leftText: "Disconnect",
+                          leftIcon: "close",
+                          onClick: disconnectUserMedia,
+                        },
+                      ])
+                  : context.media.devices.map((d) => ({
+                      state: "default",
+                      leftText: d.label,
+                      leftIcon: "videocam",
+                      onClick: () => connectToUserMedia(d.deviceId),
+                    }))
                 : [
                     {
                       state: "inactive",
@@ -147,12 +172,50 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
 
         {/*----- Right -----*/}
         <InnerRight>
-          {context.user.isAdmin&&
+          {context.user.isAdmin && (
             <>
-              <button onClick={recorderStart}>Rec</button>
-              <button onClick={recorderStop}>Stop</button>
+              {context.media.recorder ? (
+                context.media.recorder?.state === "recording" ? (
+                  <IconButton
+                    {...{
+                      icon: "cancel_presentation",
+                      color: "outline",
+                      size: "s",
+                      shape: "square",
+                      tooltip: "Capture",
+                    }}
+                    onClick={() => {
+                      recorderStop();
+                      stopPlay(false);
+                    }}
+                  />
+                ) : (
+                  <IconButton
+                    {...{
+                      icon: "center_focus_strong",
+                      color: "outline",
+                      size: "s",
+                      shape: "square",
+                      tooltip: "Capture Stop",
+                    }}
+                    onClick={recorderStart}
+                  />
+                )
+              ) : (
+                <IconButton
+                  {...{
+                    icon: "cancel_presentation",
+                    color: "outline",
+                    size: "s",
+                    shape: "square",
+                    tooltip: "Capture",
+                    isInactive: true,
+                  }}
+                />
+              )}
+              <Spacer />
             </>
-          }
+          )}
           <Time>
             <span className="material-icon">timer</span>
             <span>{context.emulator.time.toFixed(2)}</span>
@@ -186,7 +249,6 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
               }
             />
           )}
-
           {/* Play */}
           {context.emulator.state === "playing" ? (
             <IconButton
@@ -198,7 +260,7 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
                 tooltip: "Stop",
               }}
               isInactive={context.emulator.command.signals.length === 0}
-              onClick={stopPlay}
+              onClick={() => stopPlay(false)}
             />
           ) : (
             <IconButton
@@ -257,8 +319,10 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
       context.usb.device?.productName,
       context.bluetooth.isConnected,
       context.bluetooth.device?.name,
-      context.media.devices,
       context.media.isConnected,
+      context.media.devices,
+      context.media.recorder,
+      context.user.isAdmin,
       context.emulator.time,
       context.emulator.state,
       context.emulator.command.signals.length,
@@ -266,10 +330,13 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = (props) => {
       connectToUsbDevice,
       disconnectBluetooth,
       connectToBluetoothDevice,
+      disconnectUserMedia,
+      recorderStart,
       stopRec,
       rec,
       stopPlay,
       connectToUserMedia,
+      recorderStop,
       play,
     ]
   );
@@ -313,6 +380,10 @@ const Device = styled.div`
     color: ${Colors.brandColorSecondary};
     opacity: 0.6;
   }
+`;
+
+const Spacer = styled.div`
+  width: 0;
 `;
 
 const Time = styled.div`

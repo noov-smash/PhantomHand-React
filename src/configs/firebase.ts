@@ -16,17 +16,18 @@ const firebaseConfig = {
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
-// const firebaseDevConfig = {
-//   apiKey: "AIzaSyAa3cHHe-kq5RQavQDQogCich-CVeJ2VfE",
-//   authDomain: "masterhand-app.firebaseapp.com",
-//   databaseURL: "https://masterhand-app-default-rtdb.firebaseio.com",
-//   projectId: "masterhand-app",
-//   storageBucket: "masterhand-app.appspot.com",
-//   messagingSenderId: "234278796821",
-//   appId: "1:234278796821:web:48b4b82b63cdbe2c01181c"
-// }
+const firebaseDevConfig = {
+  apiKey: process.env.REACT_APP_DEV_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_DEV_FIREBASE_OAUTH_DOMAIN,
+  databaseURL: process.env.REACT_APP_DEV_FIREBASE_DATABASE_URL,
+  projectId: process.env.REACT_APP_DEV_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_DEV_FIREBASE_STORAGE_BUCKET,
+  appId: process.env.REACT_APP_DEV_FIREBASE_APP_ID,
+};
 
-firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(
+  process.env.NODE_ENV === "development" ? firebaseDevConfig : firebaseConfig
+);
 
 export default firebase;
 export const auth = firebase.auth();

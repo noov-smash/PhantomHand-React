@@ -7,6 +7,7 @@ import { Axis } from "react-gamepad";
 export interface NintendoSwitchProConProps {
   activeColor?: string;
   inactiveColor?: string;
+  showSmall: boolean;
   onPush: (b: number, s: boolean) => void;
   onRelease: (b: number) => void;
   onTilt: (s: Axis, v: number) => void;
@@ -135,7 +136,7 @@ export const NintendoSwitchProCon = ({
   return React.useMemo(
     () => (
       <Svg
-        width="100%"
+        width={props.showSmall ? "100%" : "480"}
         viewBox="0 0 1024 830"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"

@@ -25,19 +25,11 @@ export const Project: React.FC<PageProps> = (props) => {
     try {
       setContext((c) => ({ ...c, app: { isLoading: true } }));
       const projectId = props.match.params.id;
-      const project = await fetchProject(projectId, context.user.isAdmin);
-      project &&
-        setContext((c) => ({
-          ...c,
-          project: {
-            ...c.project,
-            ...project,
-            isLoaded: true,
-          },
-        }));
-      const data = queryString.parse(search).data;
-      if (data && typeof data === "string") {
-        const decoded: SignalProps[] = rison.decode(data);
+      await fetchProject(projectId, context.user.isAdmin);
+
+      const queryData = queryString.parse(search).data;
+      if (queryData && typeof queryData === "string") {
+        const decoded: SignalProps[] = rison.decode(queryData);
         decoded &&
           setContext((c) => ({
             ...c,
@@ -50,6 +42,7 @@ export const Project: React.FC<PageProps> = (props) => {
             },
           }));
       }
+
       setContext((c) => ({ ...c, app: { isLoading: false } }));
     } catch (error) {
       console.error(error);
@@ -64,11 +57,11 @@ export const Project: React.FC<PageProps> = (props) => {
 
   React.useEffect(() => {
     init();
-  }, [context.user.isAdmin, init]);
+  }, [init]);
 
   return React.useMemo(() => {
     if (!context.app.isLoading) {
-      if (context.project.isLoaded && context.project.data) {
+      if (context.project.isLoaded && context.project.publicData) {
         return (
           <StyledDiv>
             <SideMenu
@@ -77,8 +70,8 @@ export const Project: React.FC<PageProps> = (props) => {
                 title: context.project.name,
                 imageUrl: context.project.imageUrl,
               }}
-              data={context.project.data}
-              isEditable={true}
+              publicData={context.project.publicData}
+              privateData={context.project.privateData}
             />
             <StyledMain>
               <ProjectHeader />
@@ -95,11 +88,12 @@ export const Project: React.FC<PageProps> = (props) => {
     } else return <></>;
   }, [
     context.app.isLoading,
-    context.project.data,
     context.project.id,
     context.project.imageUrl,
     context.project.isLoaded,
     context.project.name,
+    context.project.privateData,
+    context.project.publicData,
   ]);
 };
 

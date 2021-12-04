@@ -52,5 +52,20 @@ export const useMedia = () => {
     [context.media.devices, setContext]
   );
 
-  return { getMediaDevices, connectToUserMedia };
+  const disconnectUserMedia = React.useCallback(async (): Promise<void> => {
+    if (!context.media.stream) return;
+    await context.media.stream.getVideoTracks().forEach((t) => t.stop);
+    await context.media.stream.getAudioTracks().forEach((t) => t.stop);
+    setContext((c) => ({
+      ...c,
+      media: {
+        ...c.media,
+        isConnected: false,
+        stream: undefined,
+        recorder: undefined,
+      },
+    }));
+  }, [context.media.stream, setContext]);
+
+  return { getMediaDevices, connectToUserMedia, disconnectUserMedia };
 };

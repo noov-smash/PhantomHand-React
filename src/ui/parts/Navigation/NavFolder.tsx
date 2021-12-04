@@ -6,7 +6,7 @@ import { IconSize } from "../../../styles/Fonts";
 
 import { Draggable, Droppable } from "react-beautiful-dnd";
 
-import { TextInput } from "../Input/Input";
+import { TextInput } from "../Input/TextInput";
 import { NavItem, NavItemProps } from "../../parts/Navigation/NavItem";
 import {
   IconDropdownButton,
@@ -27,6 +27,7 @@ export interface NavFolderProps {
   _isOpen: boolean;
   _isEditing?: boolean;
   _onClickOutside?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  _width?: number;
 }
 
 export const NavFolder = (props: NavFolderProps) => {
@@ -84,7 +85,7 @@ export const NavFolder = (props: NavFolderProps) => {
                     {...provided.dragHandleProps}
                   >
                     {!f.id && console.warn("No Folder in Folder ID")}
-                    <NavFolder {...f} key={f.id} />
+                    <NavFolder {...f} key={f.id} _width={props._width} />
                   </StyledDraggableArea>
                 )}
               </Draggable>
@@ -102,7 +103,7 @@ export const NavFolder = (props: NavFolderProps) => {
                     {...provided.dragHandleProps}
                   >
                     {!i.id && console.warn("No Item in Folder ID")}
-                    <NavItem {...i} key={i.id} />
+                    <NavItem {...i} key={i.id} _width={props._width} />
                   </StyledDraggableArea>
                 )}
               </Draggable>
@@ -139,7 +140,14 @@ const InnerLeft = styled.div`
   ${Layout.alignElements("inline-flex", "flex-start", "center")};
   ${Layout.spacingBetweenElements("horizontal", 0.5)};
   width: 100%;
+  max-width: calc(100% - 36px);
   font-size: 12px;
+  .title {
+    max-width: calc(100%);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 `;
 
 const InnerRight = styled.div`

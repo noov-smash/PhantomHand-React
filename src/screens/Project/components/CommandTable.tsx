@@ -1,19 +1,24 @@
 import React from "react";
 import styled from "styled-components";
-import { CommandProps, SignalProps } from "../../../interfaces";
-import Colors from "../../../styles/Colors";
-import * as Layout from "../../../styles/Layout";
 // Hooks
 import { Context } from "../../../hooks/Provider";
 import { useEmulator } from "../../../hooks/useEmulator";
 // UI
 import { Button } from "../../../ui/parts/Button/Button";
+import { DropdownButton } from "../../../ui/parts/Button/DropdownButton";
+import { IconButton } from "../../../ui/parts/Button/IconButton";
+import { FileInput } from "../../../ui/parts/Input/FileInput";
+// Interfaces
+import { CommandProps, SignalProps } from "../../../interfaces";
+// Styles
+import Colors from "../../../styles/Colors";
+import * as Layout from "../../../styles/Layout";
 // Configs
 import {
   ProControllerButtonNames,
   SwitchControlLibrary,
 } from "../../../configs/controller";
-import { IconButton } from "../../../ui/parts/Button/IconButton";
+
 interface TheHeaderProps {
   signals: CommandProps["signals"];
 }
@@ -23,7 +28,7 @@ export const CommandTable = (props: TheHeaderProps) => {
   const [flg, setFlg] = React.useState<boolean>(false);
   const [top, setTop] = React.useState<number>(0);
   const [isResizing, setIsResizing] = React.useState<boolean>(false);
-  const { save, share } = useEmulator();
+  const { save, share, download } = useEmulator();
 
   const calcBarWidth = React.useCallback(() => {
     const max = context.emulator.command.signals.slice(-1)[0];
@@ -124,8 +129,26 @@ export const CommandTable = (props: TheHeaderProps) => {
     setIsResizing(true);
   }, [onMouseMove, onMouseUp]);
 
-  const exportFile = React.useCallback(
-    (signals: SignalProps[]) => {
+  const exportJson = React.useCallback(
+    (signals: SignalProps[]): void => {
+      const blob = new Blob([JSON.stringify(signals, null, 2)], {
+        type: "application/json",
+      });
+      const title = context.emulator.command.title
+        .replace(" ", "")
+        .match(/^[A-Za-z0-9]*$/)
+        ? context.emulator.command.title
+        : Date.now();
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `PhantomHand-${title}.json`;
+      link.click();
+    },
+    [context.emulator.command.title]
+  );
+
+  const exportArduino = React.useCallback(
+    (signals: SignalProps[]): void => {
       let prev18 = 128;
       let prev19 = 128;
       let prev20 = 128;
@@ -181,51 +204,170 @@ export const CommandTable = (props: TheHeaderProps) => {
     [context.emulator.command.signals, context.emulator.command.title]
   );
 
+  const onChangeInputFile = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>): void => {
+      const typeCheck = (json: SignalProps[]): boolean => {
+        let result: boolean = true;
+        if (typeof json !== "object") result = false;
+        if (!Array.isArray(json)) result = false;
+        json.forEach((j) =>
+          Object.keys(j).forEach((key: string) => {
+            if (key !== "s" && key !== "t") result = false;
+          })
+        );
+        return result;
+      };
+      try {
+        if (!e.target.files || !e.target.files[0]) return;
+        const file = e.target.files[0];
+        console.log(file);
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          try {
+            const json: SignalProps[] = JSON.parse(e.target.result);
+            if (context.emulator.command.signals.length > 0) {
+              if (
+                !window.confirm(
+                  "既存のコマンドを破棄して、新しいコマンドをインポートしますか？\nDiscard the existing command and import the new one?"
+                )
+              )
+                return;
+            }
+            if (!typeCheck(json))
+              return window.alert(
+                `JSONの形式が間違っています。\nJSON format is incorrect.`
+              );
+            setContext((c) => ({
+              ...c,
+              emulator: {
+                ...c.emulator,
+                command: {
+                  ...c.emulator.command,
+                  signals: json,
+                },
+              },
+            }));
+          } catch (error) {
+            window.alert(`インポートに失敗\nFailed to import.\n\n${error}`);
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = "";
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [context.emulator.command.signals.length, setContext]
+  );
+
   return React.useMemo(() => {
     return (
       <StyledWrapper top={top}>
-        {context.emulator.command &&
-          context.emulator.command.signals.length > 0 && (
-            <Bar length={calcBarWidth()} />
-          )}
-        <StyledBorder
-          onMouseDown={onMouseDown}
-          onMouseUp={onMouseUp}
-          isResizing={isResizing}
-        />
         <StyledHeader>
+          {context.emulator.command &&
+            context.emulator.command.signals.length > 0 && (
+              <Bar length={calcBarWidth()} />
+            )}
+          <StyledBorder
+            onMouseDown={onMouseDown}
+            onMouseUp={onMouseUp}
+            isResizing={isResizing}
+          />
           <div className="left">
-            <span className="title fs-l fw-bold">Editor</span>
+            <span className="title fs-l fw-bold"></span>
           </div>
           <div className="right">
-            <Button
-              {...{
-                size: "xs",
-                color: "primary",
-                text: "Save",
-                leftIcon: "save",
-                icon: "left",
-              }}
+            {context.emulator.saveTo === "storage" && (
+              <Button
+                {...{
+                  size: "xs",
+                  color: "primary",
+                  text: "Save",
+                  leftIcon: "upload_file",
+                  icon: "left",
+                }}
+                onClick={save}
+                isInactive={
+                  context.emulator.state === "recording" ||
+                  context.emulator.command.signals.length === 0
+                }
+              />
+            )}
+            {context.emulator.saveTo === "db" && context.user.isAdmin && (
+              <Button
+                {...{
+                  size: "xs",
+                  color: "primary",
+                  text: "Upload",
+                  leftIcon: "upload_file",
+                  icon: "left",
+                }}
+                onClick={save}
+                isInactive={
+                  context.emulator.state === "recording" ||
+                  context.emulator.command.signals.length === 0
+                }
+              />
+            )}
+            {context.emulator.saveTo === "db" && !context.user.isAdmin && (
+              <Button
+                {...{
+                  size: "xs",
+                  color: "primary",
+                  text: "Save",
+                  leftIcon: "laptop",
+                  icon: "left",
+                }}
+                onClick={download}
+                isInactive={
+                  context.emulator.state === "recording" ||
+                  context.emulator.command.signals.length === 0
+                }
+              />
+            )}
+            <DropdownButton
+              id={"Export"}
+              color="outline"
+              size="xs"
+              text="Export"
+              leftIcon="get_app"
+              icon="left"
+              positionY="bottom"
+              dropdown={[
+                {
+                  state: "default",
+                  leftText: "Arduino (.ino)",
+                  leftIcon: "memory",
+                  onClick: () =>
+                    exportArduino(context.emulator.command.signals),
+                },
+                {
+                  state: "default",
+                  leftText: "JSON (.json)",
+                  leftIcon: "code",
+                  onClick: () => exportJson(context.emulator.command.signals),
+                },
+              ]}
               isInactive={
                 context.emulator.state === "recording" ||
                 context.emulator.command.signals.length === 0
               }
-              onClick={save}
             />
-            <Button
-              {...{
-                size: "xs",
-                color: "arduino",
-                text: "Arduino",
-                leftIcon: "get_app",
-                icon: "left",
-              }}
-              isInactive={
-                context.emulator.state === "recording" ||
-                context.emulator.command.signals.length === 0
-              }
-              onClick={() => exportFile(context.emulator.command.signals)}
-            />
+
+            {((context.emulator.saveTo === "db" && context.user.isAdmin) ||
+              context.emulator.saveTo === "storage") && (
+              <FileInput
+                accept="application/json"
+                color="outline"
+                size="xs"
+                text="Import"
+                leftIcon="publish"
+                icon="left"
+                isInactive={context.emulator.state === "recording"}
+                onChangeInputFile={onChangeInputFile}
+              />
+            )}
+            <div></div>
             <Button
               {...{
                 size: "xs",
@@ -254,6 +396,7 @@ export const CommandTable = (props: TheHeaderProps) => {
             </tr>
           </thead>
           <tbody>
+            {/* {console.log(context.emulator.command.signals)} */}
             {context.emulator.command.signals.sort().map((c, i) => (
               <tr
                 key={i}
@@ -267,7 +410,7 @@ export const CommandTable = (props: TheHeaderProps) => {
                 <td>
                   <input
                     type="number"
-                    value={c.t}
+                    value={c.t.toFixed(2)}
                     onChange={(e) => onChange(i, "t", e)}
                     min="0"
                     step="0.01"
@@ -276,7 +419,7 @@ export const CommandTable = (props: TheHeaderProps) => {
                 <td>
                   <StyledSelect>
                     <select
-                      value={c.s[0] !== undefined ? c.s[0] : 99}
+                      value={c.s[0] || 0}
                       onChange={(e) => onChange(i, "s1", e)}
                     >
                       {Object.keys(ProControllerButtonNames)
@@ -315,12 +458,14 @@ export const CommandTable = (props: TheHeaderProps) => {
                 </td>
                 <td className="action">
                   <IconButton
+                    tooltip="Remove"
                     size="xxs"
                     color="outline"
                     icon="remove"
                     onClick={() => removeRow(i)}
                   />
                   <IconButton
+                    tooltip="Add a row bellow"
                     size="xxs"
                     color="outline"
                     icon="add"
@@ -332,6 +477,7 @@ export const CommandTable = (props: TheHeaderProps) => {
             <tr>
               <td colSpan={5} className="add">
                 <IconButton
+                  tooltip="Add a row"
                   size="xxs"
                   color="outlinePrimary"
                   icon="add"
@@ -349,16 +495,21 @@ export const CommandTable = (props: TheHeaderProps) => {
   }, [
     top,
     context.emulator.command,
+    context.emulator.saveTo,
     context.emulator.state,
     context.emulator.time,
+    context.user.isAdmin,
     calcBarWidth,
     onMouseDown,
     onMouseUp,
     isResizing,
     save,
+    download,
+    onChangeInputFile,
     share,
     flg,
-    exportFile,
+    exportArduino,
+    exportJson,
     onChange,
     removeRow,
     addRow,
@@ -396,6 +547,7 @@ const StyledWrapper = styled.section.attrs<{ top: number }>((props) => ({
     position: sticky;
     top: 0;
     z-index: 1;
+    height: 36px;
     background-color: ${Colors.bgColorLv0};
     white-space: nowrap;
     color: ${Colors.elementColorWeak};
@@ -457,6 +609,10 @@ const StyledWrapper = styled.section.attrs<{ top: number }>((props) => ({
 const StyledHeader = styled.div`
   ${Layout.alignElements("flex", "space-between", "center")};
   padding: ${Layout.spacingVH(1 / 2, 1)};
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 2;
   .left,
   .right {
     ${Layout.alignElements("flex", "space-between", "center")};
@@ -488,9 +644,7 @@ const StyledBorder = styled.div.attrs<{ isResizing: boolean }>((props) => ({
     }`,
   },
 }))<{ isResizing: boolean }>`
-  /* position: absolute; */
-  position: -webkit-sticky;
-  position: sticky;
+  position: absolute;
   top: 0px;
   width: 100%;
   height: 4px;
@@ -507,8 +661,7 @@ const Bar = styled.div.attrs<{ length: number }>((props) => ({
     width: `${props.length}%`,
   },
 }))<{ length: number }>`
-  position: -webkit-sticky;
-  position: sticky;
+  position: absolute;
   top: 0;
   right: 0;
   height: 3px;

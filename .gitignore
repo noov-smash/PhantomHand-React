@@ -108,3 +108,5 @@ yarn.lock
 .DS_Store
 .firebase
 .vscode
+
+src/configs/firebase.ts

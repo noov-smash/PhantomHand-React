@@ -7,7 +7,7 @@ import { Shadow } from "../../../styles/Effects";
 import { FontWeight, IconSize } from "../../../styles/Fonts";
 
 // Hooks
-import { TextInput } from "../Input/Input";
+import { TextInput } from "../Input/TextInput";
 import {
   IconDropdownButton,
   IconDropdownButtonProps,
@@ -26,25 +26,33 @@ export interface NavItemProps {
   _isEditing?: boolean;
   _onClickOutside?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   _onClick?: () => void;
+  _width?: number;
 }
 
 interface WrapperProps extends NavItemProps {
   rect?: DOMRect;
+  width?: number;
 }
 
 export const NavItem = (props: NavItemProps) => {
   const liRef = React.useRef<HTMLLIElement>(null);
+  const [rect, setRect] = React.useState<DOMRect>();
   const setData = React.useCallback(() => {
     if (props._isEditing) return;
     else if (props._onClick) props._onClick();
   }, [props]);
+
+  React.useEffect(() => {
+    setRect(liRef.current?.getBoundingClientRect());
+  }, []);
 
   return (
     <Wrapper
       {...props}
       key={props.title}
       ref={liRef}
-      rect={liRef.current?.getBoundingClientRect()}
+      rect={rect}
+      width={props._width}
     >
       <InnerLeft onClick={setData}>
         {props._isEditing ? (
@@ -56,7 +64,15 @@ export const NavItem = (props: NavItemProps) => {
             onClickOutside={props._onClickOutside}
           />
         ) : (
-          `${props.title} `
+          <>
+            <span className="title">{props.title} </span>
+            {props.data.videoUrl && props.data.videoUrl !== "" && (
+              <span className="material-icon fs-xs">
+                slideshow
+                {/* smart_display */}
+              </span>
+            )}
+          </>
         )}
       </InnerLeft>
       <InnerRight>
@@ -116,7 +132,12 @@ const Wrapper = styled.li.attrs<WrapperProps>((props) => ({
     z-index: 1000;
     width: 300px;
     box-shadow: ${Shadow.float};
-    left: ${(props) => (props.rect ? `${props.rect.width}px` : "256px")};
+    left: ${(props) =>
+      props.width
+        ? `${props.width}px`
+        : props.rect
+        ? `${props.rect.width}px`
+        : "256px"};
     ${(props) =>
       props.rect
         ? props.rect.y + (300 * 9) / 16 > window.innerHeight
@@ -137,10 +158,17 @@ const Wrapper = styled.li.attrs<WrapperProps>((props) => ({
 const InnerLeft = styled.div`
   ${Layout.alignElements("inline-flex", "flex-start", "center")};
   ${Layout.spacingBetweenElements("horizontal", 0.5)};
+  max-width: calc(100% - 24px);
   width: 100%;
   user-select: none;
   padding-left: ${Layout.SpacingX(0.5)};
   font-size: 12px;
+  .title {
+    max-width: calc(100%);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 `;
 
 const InnerRight = styled.div`

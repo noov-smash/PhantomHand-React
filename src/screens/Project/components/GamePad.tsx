@@ -13,7 +13,7 @@ import { NintendoSwitchProCon } from "./NintendoSwitchProCon";
 // Configs
 import { ProControllerButtonNames } from "../../../configs/controller";
 
-export const GamePad: React.FC = () => {
+export const GamePad: React.FC<{ showSmall: boolean }> = (props) => {
   const [context] = React.useContext(Context);
   const {
     connectHandler,
@@ -31,6 +31,7 @@ export const GamePad: React.FC = () => {
           onPush={onPush}
           onRelease={onRelease}
           onTilt={axisChangeHandler}
+          showSmall={props.showSmall}
         />
         <Buttons>
           {Object.keys(context.gamePad.buttonStates).map(
@@ -53,7 +54,10 @@ export const GamePad: React.FC = () => {
             <span>Y: {context.gamePad.stickStates[21]}</span>
           </div>
         </Sticks>
-        <StyledID className={context.user.isAdmin ? 'admin' : 'anonymous'}>{context.user.isSignedIn && context.user.uid}</StyledID>
+        <StyledID>
+          {context.user.isAdmin && "★ "}
+          {context.user.isSignedIn && context.user.uid}
+        </StyledID>
         <Gamepad
           gamepadIndex={0}
           onConnect={(gamepadIndex) => connectHandler(gamepadIndex)}
@@ -65,16 +69,29 @@ export const GamePad: React.FC = () => {
         </Gamepad>
       </GamePadPreview>
     );
-  }, [onPush, onRelease, axisChangeHandler, context.gamePad.buttonStates, context.gamePad.stickStates, context.user.isAdmin, context.user.isSignedIn, context.user.uid, buttonChangeHandler, connectHandler, disconnectHandler]);
+  }, [
+    context.gamePad.buttonStates,
+    context.gamePad.stickStates,
+    context.user.isAdmin,
+    context.user.isSignedIn,
+    context.user.uid,
+    onPush,
+    onRelease,
+    axisChangeHandler,
+    props.showSmall,
+    buttonChangeHandler,
+    connectHandler,
+    disconnectHandler,
+  ]);
 };
 
 const GamePadPreview = styled.div`
   display: grid;
   place-items: center;
   position: relative;
-  min-width: 25%;
+  min-width: 40%;
   height: 100%;
-  padding: 0 8px;
+  padding: 8px 8px;
   margin: 0 auto;
 `;
 
@@ -108,7 +125,7 @@ const Sticks = styled.div`
     ${Layout.alignElements("inline-flex", "flex-start", "center")};
     flex-direction: column;
     > span {
-      width: 48px;
+      width: 38px;
       display: inline-block;
       font-size: 12px;
     }
@@ -118,7 +135,6 @@ const Sticks = styled.div`
 const StyledID = styled.span`
   position: absolute;
   bottom: 4px;
-  right: 8px;
   color: ${Colors.elementColorMute};
   font-size: 9px;
   &.admin {

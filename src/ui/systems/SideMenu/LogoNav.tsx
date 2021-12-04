@@ -3,10 +3,7 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 import * as Layout from "../../../styles/Layout";
 import { Colors } from "../../../styles/Colors";
-import {
-  IconButton,
-  IconButtonProps,
-} from "../../../ui/parts/Button/IconButton";
+import { IconButton, IconButtonProps } from "../../parts/Button/IconButton";
 
 export interface LogoNavProps {
   id: string;
@@ -43,7 +40,7 @@ LogoNav.defaultProps = {
 };
 
 const Wrapper = styled.div`
-  ${Layout.alignElements("inline-flex", "space-between", "center")};
+  ${Layout.alignElements("flex", "space-between", "center")};
   width: 100%;
   height: 48px;
   padding: ${Layout.spacingVH(0, 1)};

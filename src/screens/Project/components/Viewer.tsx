@@ -17,14 +17,14 @@ export const Viewer: React.FC = () => {
     return (
       <Wrapper>
         <PreviewWrapper>
-          {context.media.stream && <Screen />}
-          <GamePad />
+          {context.media.isConnected && <Screen />}
+          <GamePad showSmall={context.media.isConnected} />
         </PreviewWrapper>
 
         <CommandTable signals={context.emulator.command.signals} />
       </Wrapper>
     );
-  }, [context.emulator.command, context.media.stream]);
+  }, [context.emulator.command.signals, context.media.isConnected]);
 };
 
 const Wrapper = styled.div`

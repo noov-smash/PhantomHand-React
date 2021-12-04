@@ -11,6 +11,7 @@ export interface ButtonProps {
     | "destructive"
     | "ghost"
     | "outline"
+    | "outlinePrimary"
     | "transparent"
     | "arduino";
   icon: "none" | "left" | "right" | "both";
@@ -23,25 +24,30 @@ export interface ButtonProps {
   onClick?: (event: React.MouseEvent<HTMLInputElement>) => void;
 }
 
-export const Button = (props: ButtonProps) => (
-  <Btn
-    width={props.width}
-    className={`${props.color} ${props.size} ${
-      props.isInactive ? "inactive" : ""
-    }`}
-    onClick={(e: any) => props.onClick && !props.isInactive && props.onClick(e)}
-  >
-    {((props.icon === "left" && props.leftIcon) ||
-      (props.icon === "both" && props.leftIcon)) && (
-      <i className="material-icon icon">{props.leftIcon}</i>
-    )}
-    <span>{props.text}</span>
-    {((props.icon === "right" && props.rightIcon) ||
-      (props.icon === "both" && props.rightIcon)) && (
-      <i className="material-icon icon xs">{props.rightIcon}</i>
-    )}
-  </Btn>
-);
+export const Button = (props: ButtonProps) => {
+  return (
+    <StyledButton
+      width={props.width}
+      className={`${props.color} ${props.size} ${
+        props.isInactive ? "inactive" : ""
+      }`}
+      onClick={async (e: any) => {
+        if (!props.onClick || props.isInactive) return;
+        await props.onClick(e);
+      }}
+    >
+      {((props.icon === "left" && props.leftIcon) ||
+        (props.icon === "both" && props.leftIcon)) && (
+        <i className="material-icon icon">{props.leftIcon}</i>
+      )}
+      <span>{props.text}</span>
+      {((props.icon === "right" && props.rightIcon) ||
+        (props.icon === "both" && props.rightIcon)) && (
+        <i className="material-icon icon xs">{props.rightIcon}</i>
+      )}
+    </StyledButton>
+  );
+};
 
 Button.defaultProps = {
   text: "テキスト",
@@ -53,10 +59,10 @@ Button.defaultProps = {
   options: [],
 };
 
-interface BtnProps {
+interface StyledButtonProps {
   width: number | undefined;
 }
-const Btn = styled.button<BtnProps>`
+const StyledButton = styled.button<StyledButtonProps>`
   ${Layout.alignElements("inline-flex", "center", "center")};
   ${Layout.spacingBetweenElements("horizontal", 1 / 2)};
   ${Layout.roundX(1 / 2)};

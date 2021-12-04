@@ -1,16 +1,14 @@
 import React from "react";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-// Hooks
-import { useSideMenu } from "../hooks/useSideMenu";
 // Components
-import { MenuGroup } from "../../../ui/systems/Navigation/MenuGroup";
-import { LogoNav } from "./LogoNav";
-import { Button } from "../../../ui/parts/Button/Button";
+import { LogoNav } from "../../../ui/systems/SideMenu/LogoNav";
+import { Menu } from "../../../ui/systems/SideMenu/Menu";
+// Hooks
+import { Context } from "../../../hooks/Provider";
 // Styles
 import styled from "styled-components";
 import * as Layout from "../../../styles/Layout";
 import { Colors } from "../../../styles/Colors";
-import * as Effects from "../../../styles/Effects";
+import { ProjectDataProps } from "../../../interfaces";
 
 export interface SideMenuProps {
   index: {
@@ -18,14 +16,17 @@ export interface SideMenuProps {
     title: string;
     imageUrl?: string;
   };
-  data?: any;
-  isEditable: boolean;
+  publicData: ProjectDataProps[];
+  privateData: ProjectDataProps[];
 }
 
 export const SideMenu = (props: SideMenuProps) => {
-  const { menu, onDragEnd, addNewGroup } = useSideMenu(props);
+  const [context, setContext] = React.useContext(Context);
   const [width, setWidth] = React.useState<number>(256);
   const [isResizing, setIsResizing] = React.useState<boolean>(false);
+  const [activeTab, setActiveTab] = React.useState<"public" | "private">(
+    "public"
+  );
 
   const onMouseMove = React.useCallback((e: MouseEvent) => {
     setWidth(e.clientX);
@@ -43,138 +44,135 @@ export const SideMenu = (props: SideMenuProps) => {
     setIsResizing(true);
   }, [onMouseMove, onMouseUp]);
 
+  React.useEffect(() => {
+    setContext((c) => ({
+      ...c,
+      emulator: {
+        ...c.emulator,
+        command: {
+          id: "",
+          title: "",
+          path: "",
+          signals: [],
+        },
+        saveTo: activeTab === "public" ? "db" : "storage",
+      },
+    }));
+  }, [setContext, activeTab]);
+
   return React.useMemo(() => {
-    if (!menu) return <></>;
     return (
-      <Wrapper width={width}>
+      <StyledWrapper width={width}>
+        {(context.emulator.state === "playing" ||
+          context.emulator.state === "recording") && <StyledOverlay />}
         <StyledBorder
           onMouseDown={onMouseDown}
           onMouseUp={onMouseUp}
           isResizing={isResizing}
         />
-        <div>
-          <LogoNav
-            id={props.index.id}
-            title={props.index.title}
-            imageUrl={props.index.imageUrl}
-          />
-          <div className="scroll">
-            <DragDropContext onDragEnd={onDragEnd}>
-              <Droppable
-                droppableId={props.index.id}
-                type="root"
-                direction="vertical"
-              >
-                {(provided, snapshot) => (
-                  <StyledDroppableArea
-                    ref={provided.innerRef}
-                    isDraggingOver={snapshot.isDraggingOver}
-                  >
-                    {menu.map((m, i) => (
-                      <Draggable key={m.id} draggableId={m.id} index={i}>
-                        {(provided, snapshot) => (
-                          <StyledDraggableArea
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            ref={provided.innerRef}
-                            isDragging={snapshot.isDragging}
-                          >
-                            {!m.id && console.warn("No Group ID", m)}
-                            <MenuGroup {...m} key={m.id} />
-                          </StyledDraggableArea>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </StyledDroppableArea>
-                )}
-              </Droppable>
-            </DragDropContext>
-          </div>
-        </div>
-        <div className="footer">
-          {props.isEditable && (
-            <Button
-              {...{
-                ...Button.defaultProps,
-                icon: "left",
-                leftIcon: "add",
-                color: "ghost",
-                size: "l",
-                text: "New Group",
-              }}
-              onClick={addNewGroup}
+        <LogoNav
+          id={props.index.id}
+          title={props.index.title}
+          imageUrl={props.index.imageUrl}
+        />
+        <StyledTabs>
+          <StyledTab
+            onClick={() => setActiveTab("public")}
+            className={activeTab === "public" ? "active" : "inactive"}
+          >
+            <span className="material-icon fs-s">public</span>
+            <span>Public</span>
+          </StyledTab>
+          <StyledTab
+            onClick={() => setActiveTab("private")}
+            className={activeTab === "private" ? "active" : "inactive"}
+          >
+            <span className="material-icon fs-s">laptop</span>
+            <span>Local</span>
+          </StyledTab>
+        </StyledTabs>
+        <StyledContent>
+          {activeTab === "public" ? (
+            <Menu
+              index={props.index}
+              data={props.publicData}
+              isEditable={context.user.isAdmin || false}
+              saveTo="db"
+              width={width}
+            />
+          ) : (
+            <Menu
+              index={props.index}
+              data={props.privateData}
+              isEditable={true}
+              saveTo="storage"
+              width={width}
             />
           )}
-        </div>
-      </Wrapper>
+        </StyledContent>
+      </StyledWrapper>
     );
   }, [
-    addNewGroup,
+    activeTab,
+    context.emulator.state,
+    context.user.isAdmin,
     isResizing,
-    menu,
-    onDragEnd,
     onMouseDown,
     onMouseUp,
-    props.index.id,
-    props.index.imageUrl,
-    props.index.title,
-    props.isEditable,
+    props.index,
+    props.privateData,
+    props.publicData,
     width,
   ]);
 };
 
-export default SideMenu;
-
-const Wrapper = styled.nav.attrs<{ width: number }>((props) => ({
+const StyledWrapper = styled.nav.attrs<{ width: number }>((props) => ({
   style: {
     width: `${props.width}px`,
   },
 }))<{ width: number }>`
   ${Layout.alignElements("flex", "space-between", "center")};
-  ${Layout.spacingBetweenElements("vertical", 2)};
+  /* ${Layout.spacingBetweenElements("vertical", 2)}; */
   flex-direction: column;
-  height: 100%;
   transition: 0.5s ease;
-  overflow: hidden;
+  overflow-x: visible;
   background-color: ${Colors.bgColorLv1};
   position: relative;
   > * {
     width: 100%;
   }
-  .scroll {
-    height: calc(100vh - 48px - 48px);
-    overflow-y: scroll;
+`;
+
+const StyledTabs = styled.ul`
+  ${Layout.alignElements("flex", "space-between", "center")};
+  height: 32px;
+  border-bottom: 1px solid ${Colors.borderColorLv1};
+`;
+
+const StyledTab = styled.li`
+  ${Layout.alignElements("flex", "center", "center")};
+  ${Layout.spacingBetweenElements("horizontal", 1 / 2)};
+  width: 100%;
+  height: 100%;
+  &.inactive {
+    color: ${Colors.elementColorWeak};
   }
-  .footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    display: grid;
-    place-items: center;
+  &:hover {
+    cursor: pointer;
+    background-color: ${Colors.bgColorLv2};
+    color: ${Colors.elementColorDefault};
+  }
+  &.active {
+    background-color: ${Colors.bgColorLv2};
+    color: ${Colors.brandColorPrimary};
+    font-weight: bold;
   }
 `;
 
-const StyledDroppableArea = styled.div.attrs<{ isDraggingOver: boolean }>(
-  (props) => ({
-    style: {
-      background: `${props.isDraggingOver ? Colors.bgColorLv2 : "transparent"}`,
-    },
-  })
-)<{ isDraggingOver: boolean }>`
-  ${Layout.spacingBetweenElements("vertical", 1)};
-  user-select: "none";
-`;
-
-const StyledDraggableArea = styled.div.attrs<{ isDragging: boolean }>(
-  (props) => ({
-    style: {
-      background: `${props.isDragging ? Colors.bgColorLv1 : "transparent"}`,
-      boxShadow: `${props.isDragging ? Effects.Shadow.float : "none"}`,
-    },
-  })
-)<{ isDragging: boolean }>`
-  user-select: "none";
+const StyledContent = styled.div`
+  height: calc(100vh - 48px - 32px);
+  flex-grow: 1;
+  overflow-y: scroll;
 `;
 
 const StyledBorder = styled.div.attrs<{ isResizing: boolean }>((props) => ({
@@ -194,4 +192,14 @@ const StyledBorder = styled.div.attrs<{ isResizing: boolean }>((props) => ({
     background-color: ${Colors.borderColorLv2} !important;
     cursor: col-resize;
   }
+`;
+
+const StyledOverlay = styled.div`
+  position: absolute;
+  width: 100%;
+  height: calc(100% - 48px);
+  bottom: 0;
+  background-color: white;
+  opacity: 0.4;
+  z-index: 1000;
 `;

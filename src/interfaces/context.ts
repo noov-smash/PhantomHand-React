@@ -50,6 +50,7 @@ export interface ContextProps {
     state: "standby" | "recording" | "playing" | "repeating";
     time: number;
     command: CommandProps;
+    saveTo?: "db" | "storage";
   };
   gamePad: {
     isConnected: boolean;
