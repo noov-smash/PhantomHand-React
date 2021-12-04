@@ -25,7 +25,7 @@ export const useEmulator = () => {
   const recorderStart = React.useCallback((): void => {
     if (!context.media.recorder || context.media.recorder.state === "recording")
       return;
-    console.log('Screen Rec...')
+    console.log("Screen Rec...");
     context.media.recorder.ondataavailable = (e: any) => {
       const blob = new Blob([e.data], { type: e.data.type });
       setContext((c: ContextProps) => ({
@@ -45,7 +45,7 @@ export const useEmulator = () => {
   const recorderStop = React.useCallback((): void => {
     if (!context.media.recorder || context.media.recorder.state !== "recording")
       return;
-      console.log('Screen Stop...')
+    console.log("Screen Stop...");
     context.media.recorder.stop();
   }, [context.media.recorder]);
 
@@ -248,10 +248,7 @@ export const useEmulator = () => {
       // AnonymousUser or Local Storage
       else {
         if (!context.project.id) return;
-        const storage = localStorage.getItem(
-          `PhantomHand-${context.project.id}`
-        );
-        if (!storage || !context.project.privateData) return;
+        if (!context.project.privateData) return;
         const path: string[] = data.path.split("/");
         const newData: any = Array.from(context.project.privateData);
         if (path.length === 1 || !newData) {

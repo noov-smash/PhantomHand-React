@@ -190,7 +190,7 @@ export const useSideMenu = (props: MenuProps) => {
         props.isEditable &&
         context.user.isAdmin
       )
-      await saveCommand(props.index.id, saveData);
+        await saveCommand(props.index.id, saveData);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
