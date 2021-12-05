@@ -37,7 +37,7 @@ const KeyVisual = (props: KeyVisualProps) => {
 
 const Main = styled.section`
   margin-top: 60px;
-  height: 640px;
+  height: 540px;
   background: ${Colors.bgGrad};
   text-align: center;
   ${alignElements("flex", "center", "center")};
