@@ -8,6 +8,7 @@ import {
   MenuGroupProps,
 } from "../../../ui/systems/Navigation/MenuGroup";
 import { Button } from "../../../ui/parts/Button/Button";
+import { IconButton } from "../../parts/Button/IconButton";
 // Styles
 import styled from "styled-components";
 import * as Layout from "../../../styles/Layout";
@@ -29,12 +30,12 @@ export interface MenuProps {
 
 export const Menu = (props: MenuProps) => {
   const { menu } = useSideMenu(props);
-  const { onDragEnd, addNewGroup } = useSideMenu(props);
+  const { onDragEnd, addNewGroup, removeAll } = useSideMenu(props);
 
   return React.useMemo(() => {
     if (!menu) return <></>;
     return (
-      <StyledWrapper>
+      <>
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable
             droppableId={props.index.id}
@@ -66,22 +67,34 @@ export const Menu = (props: MenuProps) => {
             )}
           </Droppable>
         </DragDropContext>
-        <div className="footer">
+        <StyledFooter>
           {props.isEditable && (
-            <Button
-              {...{
-                ...Button.defaultProps,
-                icon: "left",
-                leftIcon: "add",
-                color: "ghost",
-                size: "l",
-                text: "New Group",
-              }}
-              onClick={addNewGroup}
-            />
+            <>
+              <Button
+                {...{
+                  ...Button.defaultProps,
+                  icon: "left",
+                  leftIcon: "add",
+                  color: "ghost",
+                  size: "l",
+                  text: "New Group",
+                }}
+                onClick={addNewGroup}
+              />
+              {props.saveTo === "storage" && menu.length > 0 && (
+                <IconButton
+                  tooltip="Delete All"
+                  icon="delete"
+                  color="ghost"
+                  size="s"
+                  shape="square"
+                  onClick={removeAll}
+                />
+              )}
+            </>
           )}
-        </div>
-      </StyledWrapper>
+        </StyledFooter>
+      </>
     );
   }, [
     addNewGroup,
@@ -89,21 +102,12 @@ export const Menu = (props: MenuProps) => {
     onDragEnd,
     props.index.id,
     props.isEditable,
+    props.saveTo,
     props.width,
+    removeAll,
   ]);
 };
 
-const StyledWrapper = styled.div`
-  .footer {
-    ${Layout.alignElements("flex", "center", "center")};
-    ${Layout.spacingBetweenElements("horizontal", 1 / 2)};
-    position: sticky;
-    bottom: 0;
-    width: 100%;
-    place-items: center;
-    background-color: ${Colors.bgColorLv1};
-  }
-`;
 const StyledDraggableArea = styled.div.attrs<{ isDragging: boolean }>(
   (props) => ({
     style: {
@@ -124,4 +128,14 @@ const StyledDroppableArea = styled.div.attrs<{ isDraggingOver: boolean }>(
 )<{ isDraggingOver: boolean }>`
   ${Layout.spacingBetweenElements("vertical", 1)};
   user-select: "none";
+`;
+
+const StyledFooter = styled.div`
+  ${Layout.alignElements("flex", "center", "center")};
+  ${Layout.spacingBetweenElements("horizontal", 2)};
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  place-items: center;
+  background-color: ${Colors.bgColorLv1};
 `;

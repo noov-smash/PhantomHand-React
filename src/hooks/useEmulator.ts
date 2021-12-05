@@ -3,6 +3,8 @@ import React from "react";
 import { Context } from "./Provider";
 import { useDatabase } from "./useDatabase";
 import { useGamePad } from "./useGamePad";
+// Configs
+import { SwitchControlLibrary } from "../configs/controller";
 // Interfaces
 import { ContextProps, SignalProps } from "../interfaces";
 import uid from "uniqid";
@@ -326,6 +328,41 @@ export const useEmulator = () => {
     storeCommand,
   ]);
 
+  const upload = React.useCallback(async () => {
+    if (!context.emulator.command.signals) return;
+    console.log("Uploading...", context.emulator.command.signals);
+    try {
+      const data = context.emulator.command;
+      if (!context.user.isAdmin || !context.project.publicData) return;
+      const path = `${context.project.id}/${context.project.publicData.length}`;
+      await saveCommand(path, {
+        id: uid(),
+        index: {
+          title: "Uploaded",
+        },
+        items: [
+          {
+            id: uid(),
+            title: data.title || "Untitled",
+            data: data,
+          },
+        ],
+      });
+      window.alert(
+        `"Public"にコマンドをアップロードしました。\nUploaded the command to "Public".`
+      );
+    } catch (error) {
+      window.alert("アップロードに失敗しました\n Failed to upload.");
+      console.error(error);
+    }
+  }, [
+    context.emulator.command,
+    context.project.id,
+    context.project.publicData,
+    context.user.isAdmin,
+    saveCommand,
+  ]);
+
   const share = React.useCallback(async (): Promise<void> => {
     try {
       const command = rison.encode(context.emulator.command.signals);
@@ -344,6 +381,154 @@ export const useEmulator = () => {
     }
   }, [context.emulator.command.signals]);
 
+  const exportJson = React.useCallback(
+    (signals: SignalProps[]): void => {
+      const blob = new Blob([JSON.stringify(signals, null, 2)], {
+        type: "application/json",
+      });
+      const title = context.emulator.command.title
+        .replace(" ", "")
+        .match(/^[A-Za-z0-9]*$/)
+        ? context.emulator.command.title
+        : Date.now();
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `PhantomHand-${title}.json`;
+      link.click();
+    },
+    [context.emulator.command.title]
+  );
+
+  const exportArduino = React.useCallback(
+    (signals: SignalProps[]): void => {
+      let prev18 = 128;
+      let prev19 = 128;
+      let prev20 = 128;
+      let prev21 = 128;
+      let code =
+        "#include <NintendoSwitchControlLibrary.h>\n\nvoid setup() {}\n\nvoid loop() {\n\n";
+      const title = context.emulator.command.title
+        .replace(" ", "")
+        .match(/^[A-Za-z0-9]*$/)
+        ? context.emulator.command.title
+        : Date.now();
+
+      signals.sort().forEach((c, i) => {
+        const prev = context.emulator.command.signals.sort()[i - 1];
+        if (c.s[0] === 18) prev18 = c.s[1];
+        if (c.s[0] === 19) prev19 = c.s[1];
+        if (c.s[0] === 20) prev20 = c.s[1];
+        if (c.s[0] === 21) prev21 = c.s[1];
+        code =
+          code + `  delay(${((c.t - (prev?.t || 0)) * 1000).toFixed(0)});\n`;
+        code =
+          code +
+          "  " +
+          (c.s[0] === 99
+            ? "\n"
+            : c.s[0] < 12 || (16 <= c.s[0] && c.s[0] <= 17)
+            ? `SwitchControlLibrary().${
+                c.s[1] === 1 ? "press" : "release"
+              }Button(Button::${SwitchControlLibrary[c.s[0]]});\n`
+            : 12 <= c.s[0] && c.s[0] <= 15
+            ? `SwitchControlLibrary().${
+                c.s[1] === 1 ? "press" : "release"
+              }HatButton(Hat::${SwitchControlLibrary[c.s[0]]});\n`
+            : c.s[0] === 18
+            ? `SwitchControlLibrary().moveLeftStick(${c.s[1]}, ${prev19});\n`
+            : c.s[0] === 19
+            ? `SwitchControlLibrary().moveLeftStick(${prev18}, ${c.s[1]});\n`
+            : c.s[0] === 20
+            ? `SwitchControlLibrary().moveLeftStick(${c.s[1]}, ${prev21});\n`
+            : c.s[0] === 21
+            ? `SwitchControlLibrary().moveLeftStick(${prev20}, ${c.s[1]});\n`
+            : "");
+        code = code + "  SwitchControlLibrary().sendReport();\n";
+      });
+      code = code + "}\n\n";
+
+      const blob = new Blob([code], { type: "text/plain" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `PhantomHand-${title}.ino`;
+      link.click();
+    },
+    [context.emulator.command.signals, context.emulator.command.title]
+  );
+
+  const onChangeInputFile = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>): void => {
+      const typeCheck = (json: SignalProps[]): boolean => {
+        let result: boolean = true;
+        if (typeof json !== "object") result = false;
+        if (!Array.isArray(json)) result = false;
+        json.forEach((j) =>
+          Object.keys(j).forEach((key: string) => {
+            if (key !== "s" && key !== "t") result = false;
+          })
+        );
+        return result;
+      };
+      try {
+        if (!e.target.files || !e.target.files[0]) return;
+        const file = e.target.files[0];
+        console.log(file);
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          try {
+            const json: SignalProps[] = JSON.parse(e.target.result);
+            if (context.emulator.command.signals.length > 0) {
+              if (
+                !window.confirm(
+                  "既存のコマンドを破棄して、新しいコマンドをインポートしますか？\nDiscard the existing command and import the new one?"
+                )
+              )
+                return;
+            }
+            if (!typeCheck(json))
+              return window.alert(
+                `JSONの形式が間違っています。\nJSON format is incorrect.`
+              );
+            setContext((c) => ({
+              ...c,
+              emulator: {
+                ...c.emulator,
+                command: {
+                  ...c.emulator.command,
+                  signals: json,
+                },
+              },
+            }));
+          } catch (error) {
+            window.alert(`インポートに失敗\nFailed to import.\n\n${error}`);
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = "";
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [context.emulator.command.signals.length, setContext]
+  );
+
+  const clear = React.useCallback(() => {
+    const confirm = window.confirm(
+      "作成したコマンドを破棄しますか？\nAre you sure you to discard the command you created?"
+    );
+    if (!confirm) return;
+    setContext((c) => ({
+      ...c,
+      emulator: {
+        ...c.emulator,
+        command: {
+          ...c.emulator.command,
+          signals: [],
+        },
+      },
+    }));
+  }, [setContext]);
+
   return {
     rec,
     stopRec,
@@ -352,7 +537,12 @@ export const useEmulator = () => {
     save,
     share,
     download,
+    upload,
+    exportArduino,
+    exportJson,
+    onChangeInputFile,
     recorderStart,
     recorderStop,
+    clear,
   };
 };

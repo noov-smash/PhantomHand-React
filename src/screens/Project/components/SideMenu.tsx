@@ -45,6 +45,7 @@ export const SideMenu = (props: SideMenuProps) => {
   }, [onMouseMove, onMouseUp]);
 
   React.useEffect(() => {
+    console.log(activeTab);
     setContext((c) => ({
       ...c,
       emulator: {

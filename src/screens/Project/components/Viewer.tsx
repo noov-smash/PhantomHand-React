@@ -20,11 +20,10 @@ export const Viewer: React.FC = () => {
           {context.media.isConnected && <Screen />}
           <GamePad showSmall={context.media.isConnected} />
         </PreviewWrapper>
-
-        <CommandTable signals={context.emulator.command.signals} />
+        <CommandTable />
       </Wrapper>
     );
-  }, [context.emulator.command.signals, context.media.isConnected]);
+  }, [context.media.isConnected]);
 };
 
 const Wrapper = styled.div`

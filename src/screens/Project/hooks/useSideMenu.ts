@@ -48,137 +48,9 @@ export const useSideMenu = (props: MenuProps) => {
     menuRef.current = menu;
   }, [menu]);
 
-  const indexRightButtons = React.useCallback(
-    (action: buttonActionProps): NavIndexProps["_rightButtons"] =>
-      props.isEditable
-        ? [
-            {
-              icon: "more_horiz",
-              color: "ghost",
-              size: "xxs",
-              shape: "square",
-              id: uid(),
-              dropdown: [
-                {
-                  state: "default",
-                  leftText: "Rename",
-                  leftIcon: "edit",
-                  onClick: () => rename(action),
-                },
-                {
-                  state: "default",
-                  leftText: "Delete",
-                  leftIcon: "delete",
-                  onClick: () => remove(action),
-                },
-              ],
-            },
-            {
-              icon: "add",
-              color: "ghost",
-              size: "xxs",
-              shape: "square",
-              id: uid(),
-              dropdown: [
-                {
-                  state: "default",
-                  leftText: "New Folder",
-                  leftIcon: "create_new_folder",
-                  onClick: () => addItem(action, "folder"),
-                },
-                {
-                  state: "default",
-                  leftText: "New Command",
-                  leftIcon: "sports_esports",
-                  onClick: () => addItem(action, "item"),
-                },
-              ],
-            },
-          ]
-        : undefined,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props.isEditable]
-  );
-
-  const folderRightButtons = React.useCallback(
-    (action: buttonActionProps): NavFolderProps["_rightButtons"] =>
-      props.isEditable
-        ? [
-            {
-              icon: "more_horiz",
-              color: "ghost",
-              size: "xxs",
-              shape: "square",
-              id: uid(),
-              dropdown: [
-                {
-                  state: "default",
-                  leftText: "Rename",
-                  leftIcon: "edit",
-                  onClick: () => rename(action),
-                },
-                {
-                  state: "default",
-                  leftText: "Delete",
-                  leftIcon: "delete",
-                  onClick: () => remove(action),
-                },
-              ],
-            },
-            {
-              icon: "add",
-              color: "ghost",
-              size: "xxs",
-              shape: "square",
-              id: uid(),
-              dropdown: [
-                {
-                  state: "default",
-                  leftText: "New Command",
-                  leftIcon: "sports_esports",
-                  onClick: () => addItem(action, "item"),
-                },
-              ],
-            },
-          ]
-        : undefined,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props.isEditable]
-  );
-
-  const itemRightButtons = React.useCallback(
-    (action: buttonActionProps): NavItemProps["_rightButtons"] =>
-      props.isEditable
-        ? [
-            {
-              icon: "more_horiz",
-              color: "ghost",
-              size: "xxs",
-              shape: "square",
-              id: uid(),
-              dropdown: [
-                {
-                  state: "default",
-                  leftText: "Rename",
-                  leftIcon: "edit",
-                  onClick: () => rename(action),
-                },
-                {
-                  state: "default",
-                  leftText: "Delete",
-                  leftIcon: "delete",
-                  onClick: () => remove(action),
-                },
-              ],
-            },
-          ]
-        : undefined,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props.isEditable]
-  );
-
   const save = React.useCallback(
     async (data: MenuGroupProps[], notUpload?: boolean): Promise<void> => {
+      console.log("Saving...", props.saveTo);
       setMenu(convert().toFormat(data));
       const saveData = convert().toRaw(data);
       if (props.saveTo === "storage") {
@@ -194,11 +66,11 @@ export const useSideMenu = (props: MenuProps) => {
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
-      context.project.id,
-      context.user.isAdmin,
-      props.index.id,
       props.saveTo,
       props.isEditable,
+      props.index.id,
+      context.user.isAdmin,
+      context.project.id,
       saveCommand,
       storeCommand,
     ]
@@ -207,16 +79,17 @@ export const useSideMenu = (props: MenuProps) => {
   const saveName = React.useCallback(
     (
       action: buttonActionProps,
-      e: React.ChangeEvent<HTMLInputElement>
+      e: React.ChangeEvent<HTMLInputElement>,
+      prevRightButtons: NavIndexProps["_rightButtons"]
     ): void => {
-      console.log("Saving Name....");
+      console.log("Saving Name....", props.saveTo);
       if (!menuRef.current) return;
       const newMenu = [...menuRef.current];
       const group = newMenu[action.groupIndex];
       const saveNameProps = {
         title: e.target.value,
         _isEditing: false,
-        _rightButtons: indexRightButtons(action),
+        _rightButtons: prevRightButtons,
         _onClickOutside: () => {},
       };
       if (action.type === "index")
@@ -271,35 +144,50 @@ export const useSideMenu = (props: MenuProps) => {
       }
       save(newMenu);
     },
-    [indexRightButtons, save, setContext]
+    [props.saveTo, save, setContext]
   );
 
+  // Group
   const rename = React.useCallback(
     (action: buttonActionProps): void => {
-      console.log("Renaming....");
+      console.log("Renaming....", props.saveTo);
       if (!menuRef.current) return;
       const newMenu = [...menuRef.current];
       const group = newMenu[action.groupIndex];
       const editProps = {
         _isEditing: true,
         _rightButtons: [],
-        _onClickOutside: (e: React.ChangeEvent<HTMLInputElement>) =>
-          saveName(action, e),
       };
       if (action.type === "index")
         group.index = {
           ...group.index,
           ...editProps,
+          _onClickOutside: (e: React.ChangeEvent<HTMLInputElement>) =>
+            saveName(action, e, group.index._rightButtons),
         };
       else if (action.type === "folder" && group.folders)
         group.folders[action.folderIndex] = {
           ...group.folders[action.folderIndex],
           ...editProps,
+          _onClickOutside: (e: React.ChangeEvent<HTMLInputElement>) =>
+            saveName(
+              action,
+              e,
+              group.folders
+                ? group.folders[action.folderIndex]._rightButtons
+                : []
+            ),
         };
       else if (action.type === "item" && group.items)
         group.items[action.itemIndex] = {
           ...group.items[action.itemIndex],
           ...editProps,
+          _onClickOutside: (e: React.ChangeEvent<HTMLInputElement>) =>
+            saveName(
+              action,
+              e,
+              group.items ? group.items[action.itemIndex]._rightButtons : []
+            ),
         };
       else if (action.type === "folderItem" && group.folders) {
         const folder = group.folders[action.folderIndex];
@@ -307,73 +195,24 @@ export const useSideMenu = (props: MenuProps) => {
           folder.items[action.itemIndex] = {
             ...folder.items[action.itemIndex],
             ...editProps,
+            _onClickOutside: (e: React.ChangeEvent<HTMLInputElement>) =>
+              saveName(
+                action,
+                e,
+                group.folders
+                  ? group.folders[action.folderIndex]._rightButtons
+                  : []
+              ),
           };
       }
       setMenu(newMenu);
     },
-    [saveName]
-  );
-
-  const addItem = React.useCallback(
-    async (
-      action: buttonActionProps,
-      itemType: "folder" | "item"
-    ): Promise<void> => {
-      console.log("Adding Item....");
-      if (!menuRef.current) return;
-      const newMenu = [...menuRef.current];
-      const group = newMenu[action.groupIndex];
-      if (itemType === "folder") {
-        const newFolder = {
-          id: uid(),
-          title: "Untitled",
-          _parentId: `${group.id}__folders`,
-          _level: 0,
-          _isOpen: false,
-          _rightButtons: folderRightButtons({
-            type: "folder",
-            groupIndex: action.groupIndex,
-            folderIndex: group.folders?.length || 0,
-          }),
-        };
-        if (action.type === "index")
-          group.folders = group.folders?.concat(newFolder);
-      } else if (itemType === "item" || itemType === "folderItem") {
-        const id = uid();
-        const newItem = {
-          id: id,
-          title: "Untitled",
-          data: {
-            id: id,
-            title: "Untitled",
-            path: `${action.groupIndex}/items/${group.items?.length || 0}`,
-            signals: [],
-          },
-          _level: 0,
-          _state: "default",
-          _rightButtons: itemRightButtons({
-            type: "item",
-            groupIndex: action.groupIndex,
-            itemIndex: group.items?.length || 0,
-          }),
-        };
-        if (action.type === "index") group.items = group.items?.concat(newItem);
-        else if (action.type === "folder" && group.folders) {
-          const folder = group.folders[action.folderIndex];
-          folder._isOpen = true;
-          folder.items = folder.items
-            ? folder.items.concat(newItem)
-            : [newItem];
-        }
-      }
-      save(newMenu);
-    },
-    [folderRightButtons, itemRightButtons, save]
+    [saveName, props.saveTo]
   );
 
   const remove = React.useCallback(
     async (action: buttonActionProps): Promise<void> => {
-      console.log("Removing....");
+      console.log("Removing....", props.saveTo);
       if (!menuRef.current) return;
       const newMenu = [...menuRef.current];
       if (action.type === "index") newMenu.splice(action.groupIndex, 1);
@@ -388,8 +227,207 @@ export const useSideMenu = (props: MenuProps) => {
       }
       save(newMenu);
     },
-    [save]
+    [props.saveTo, save]
   );
+
+  // Item
+  const itemRightButtons = React.useCallback(
+    (action: buttonActionProps): NavItemProps["_rightButtons"] =>
+      props.isEditable
+        ? [
+            {
+              icon: "more_horiz",
+              color: "ghost",
+              size: "xxs",
+              shape: "square",
+              id: uid(),
+              dropdown: [
+                {
+                  state: "default",
+                  leftText: "Rename",
+                  leftIcon: "edit",
+                  onClick: () => rename(action),
+                },
+                {
+                  state: "default",
+                  leftText: "Delete",
+                  leftIcon: "delete",
+                  onClick: () => remove(action),
+                },
+              ],
+            },
+          ]
+        : undefined,
+    [props.isEditable, remove, rename]
+  );
+
+  const addItem = React.useCallback(
+    async (action: buttonActionProps): Promise<void> => {
+      if (!menuRef.current) return;
+      console.log("Adding Item...", props.saveTo);
+      const newMenu = [...menuRef.current];
+      const group = newMenu[action.groupIndex];
+      const id = uid();
+      const newItem = {
+        id: id,
+        title: "Untitled",
+        data: {
+          id: id,
+          title: "Untitled",
+          path: `${action.groupIndex}/items/${group.items?.length || 0}`,
+          signals: [],
+        },
+        _level: 0,
+        _state: "default",
+        _rightButtons: itemRightButtons({
+          type: "item",
+          groupIndex: action.groupIndex,
+          itemIndex: group.items?.length || 0,
+        }),
+      };
+      if (action.type === "index") group.items = group.items?.concat(newItem);
+      else if (action.type === "folder" && group.folders) {
+        const folder = group.folders[action.folderIndex];
+        folder._isOpen = true;
+        folder.items = folder.items ? folder.items.concat(newItem) : [newItem];
+      }
+      await save(newMenu);
+    },
+    [itemRightButtons, props.saveTo, save]
+  );
+
+  // Folder
+  const folderRightButtons = React.useCallback(
+    (action: buttonActionProps): NavFolderProps["_rightButtons"] =>
+      props.isEditable
+        ? [
+            {
+              icon: "more_horiz",
+              color: "ghost",
+              size: "xxs",
+              shape: "square",
+              id: uid(),
+              dropdown: [
+                {
+                  state: "default",
+                  leftText: "Rename",
+                  leftIcon: "edit",
+                  onClick: () => rename(action),
+                },
+                {
+                  state: "default",
+                  leftText: "Delete",
+                  leftIcon: "delete",
+                  onClick: () => remove(action),
+                },
+              ],
+            },
+            {
+              icon: "add",
+              color: "ghost",
+              size: "xxs",
+              shape: "square",
+              id: uid(),
+              dropdown: [
+                {
+                  state: "default",
+                  leftText: "New Command",
+                  leftIcon: "sports_esports",
+                  onClick: () => addItem(action),
+                },
+              ],
+            },
+          ]
+        : undefined,
+    [addItem, props.isEditable, remove, rename]
+  );
+
+  const addFolder = React.useCallback(
+    async (action: buttonActionProps) => {
+      if (!menuRef.current) return;
+      console.log("Adding Item...", props.saveTo);
+      const newMenu = [...menuRef.current];
+      const group = newMenu[action.groupIndex];
+      const newFolder = {
+        id: uid(),
+        title: "Untitled",
+        _parentId: `${group.id}__folders`,
+        _level: 0,
+        _isOpen: false,
+        _rightButtons: folderRightButtons({
+          type: "folder",
+          groupIndex: action.groupIndex,
+          folderIndex: group.folders?.length || 0,
+        }),
+      };
+      if (action.type === "index")
+        group.folders = group.folders?.concat(newFolder);
+      await save(newMenu);
+    },
+    [folderRightButtons, props.saveTo, save]
+  );
+
+  // Index
+  const indexRightButtons = React.useCallback(
+    (action: buttonActionProps): NavIndexProps["_rightButtons"] =>
+      props.isEditable
+        ? [
+            {
+              icon: "more_horiz",
+              color: "ghost",
+              size: "xxs",
+              shape: "square",
+              id: uid(),
+              dropdown: [
+                {
+                  state: "default",
+                  leftText: "Rename",
+                  leftIcon: "edit",
+                  onClick: () => rename(action),
+                },
+                {
+                  state: "default",
+                  leftText: "Delete",
+                  leftIcon: "delete",
+                  onClick: () => remove(action),
+                },
+              ],
+            },
+            {
+              icon: "add",
+              color: "ghost",
+              size: "xxs",
+              shape: "square",
+              id: uid(),
+              dropdown: [
+                {
+                  state: "default",
+                  leftText: "New Folder",
+                  leftIcon: "create_new_folder",
+                  onClick: () => addFolder(action),
+                },
+                {
+                  state: "default",
+                  leftText: "New Command",
+                  leftIcon: "sports_esports",
+                  onClick: () => addItem(action),
+                },
+              ],
+            },
+          ]
+        : undefined,
+    [addFolder, addItem, props.isEditable, remove, rename]
+  );
+
+  const removeAll = React.useCallback(async (): Promise<void> => {
+    const confirm = window.confirm(
+      '"Local" 内の全てのコマンドを削除しますか？\nAre you sure you to delete all commands in "Local"?'
+    );
+    if (!confirm) return;
+    console.log("Removing....", props.saveTo);
+    const newMenu: MenuGroupProps[] = [];
+    save(newMenu);
+  }, [props.saveTo, save]);
 
   const inactivateItems = React.useCallback((): MenuGroupProps[] | void => {
     if (!menuRef.current) return;
@@ -565,19 +603,23 @@ export const useSideMenu = (props: MenuProps) => {
   }, [createFolders, createIndex, createItems]);
 
   const addNewGroup = React.useCallback(async (): Promise<void> => {
-    if (!menu) return;
-    const length = menu.length;
-    const id = uid();
-    const newGroup = {
-      id: id,
-      index: createIndex(
-        {
-          title: "Untitled",
-        },
-        length
-      ),
-    };
-    save(menu.concat(newGroup));
+    try {
+      if (!menu) return;
+      const length = menu.length;
+      const id = uid();
+      const newGroup = {
+        id: id,
+        index: createIndex(
+          {
+            title: "Untitled",
+          },
+          length
+        ),
+      };
+      await save(menu.concat(newGroup));
+    } catch (error) {
+      console.error(error);
+    }
   }, [createIndex, menu, save]);
 
   const onDragEnd = React.useCallback(
@@ -629,7 +671,7 @@ export const useSideMenu = (props: MenuProps) => {
 
   React.useEffect(() => {
     if (props.data) setMenu(convert().toFormat(props.data));
-  }, [convert, props, props.data]);
+  }, [convert, props, props.data, props.saveTo]);
 
-  return { menu, setMenu, onDragEnd, addNewGroup };
+  return { menu, setMenu, onDragEnd, addNewGroup, removeAll };
 };
