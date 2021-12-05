@@ -19,7 +19,7 @@ export interface IconButtonProps {
     | "orange"
     | string;
   shape: "circle" | "square" | string;
-  size: "xxs" | "xs" | "s" | "m" | "l" | string;
+  size: "xxs" | "xs" | "s" | "m" | "l" | "ms" | string;
   icon: string;
   isInactive?: boolean;
   tooltip?: string;
@@ -84,6 +84,11 @@ const StyledButton = styled.button`
   &.s {
     height: 32px;
     width: 32px;
+  }
+  &.ms {
+    height: 28px;
+    width: 28px;
+    font-size: ${IconSize.m} !important;
   }
   &.m {
     height: 40px;

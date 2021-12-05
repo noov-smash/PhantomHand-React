@@ -252,7 +252,6 @@ export const CommandTable = () => {
                 onChangeInputFile={onChangeInputFile}
               />
             )}
-            <div></div>
             <Button
               {...{
                 size: "xs",
@@ -276,7 +275,7 @@ export const CommandTable = () => {
                   shape="square"
                   icon="delete"
                   color="destructive"
-                  size="s"
+                  size="ms"
                   onClick={clear}
                   isInactive={
                     context.emulator.state === "recording" ||
