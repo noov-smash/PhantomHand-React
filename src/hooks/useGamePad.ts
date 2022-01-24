@@ -166,6 +166,7 @@ export const useGamePad = () => {
 
   const buttonChangeHandler = React.useCallback(
     (buttonName: string | number, down: boolean): void => {
+      console.log(buttonName, down);
       try {
         // Trigger button has two states, so discard one
         if (buttonName !== "LeftTrigger" && buttonName !== "RightTrigger") {
